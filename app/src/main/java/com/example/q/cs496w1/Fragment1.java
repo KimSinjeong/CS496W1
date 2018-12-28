@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import android.widget.ArrayAdapter;
@@ -23,11 +24,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Fragment1 extends Fragment {
+
     public static Fragment1 newInstance() {
         Bundle args = new Bundle();
         Fragment1 fragment = new Fragment1();
@@ -43,6 +44,7 @@ public class Fragment1 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         JSONArray jarray = new JSONArray();
         if(Permissioncheck()) {
             jarray = getAddr();
