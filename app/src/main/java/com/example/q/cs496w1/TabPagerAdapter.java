@@ -34,11 +34,11 @@ public class TabPagerAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
-                return "첫번째 탭";
+                return "연락처";
             case 1:
-                return "두번째 탭";
+                return "갤러리";
             case 2:
-                return "세번째 탭";
+                return "벤-츠";
             default:
                 return null;
         }
