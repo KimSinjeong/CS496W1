@@ -1,22 +1,33 @@
 package com.example.q.cs496w1;
 
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Fragment3 extends Fragment {
     float y1,y2;
+    final int BT_REQUEST_CODE = 1;
+    final int ACT_REQUEST_CODE = 1;
 
     public static Fragment3 newInstance() {
         Bundle args = new Bundle();
@@ -43,6 +54,24 @@ public class Fragment3 extends Fragment {
 
         final RelativeLayout relativeLayout1 = view.findViewById(R.id.relative_im6);
         final RelativeLayout relativeLayout2 = view.findViewById(R.id.relative_im7);
+
+        final Button BTbtn = view.findViewById(R.id.BT);
+
+        // "블루투스 연결" 버튼 클릭 이벤트
+        BTbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 새 창에서 ConnectBluetoothActivity 실행
+                Intent intent = new Intent(getActivity(), ConnectBluetoothActivity.class);
+                int btPermission = ContextCompat.checkSelfPermission(getActivity().getBaseContext(), Manifest.permission.BLUETOOTH);
+
+                if (btPermission == PackageManager.PERMISSION_GRANTED) {
+                    startActivityForResult(intent, ACT_REQUEST_CODE);
+                }
+                else
+                    ActivityCompat.requestPermissions( getActivity(), new String[]{Manifest.permission.BLUETOOTH}, BT_REQUEST_CODE);
+            }
+        });
 
         relativeLayout1.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -72,35 +101,58 @@ public class Fragment3 extends Fragment {
         }
         );
         relativeLayout2.setOnTouchListener(new View.OnTouchListener() {
-                                               @Override
-                                               public boolean onTouch(View v, MotionEvent event) {
-                                                   final float y_size = btn2.getHeight()/2;
-                                                   final float compare_center = relativeLayout2.getMinimumHeight() + relativeLayout2.getHeight()/2;
-                                                   switch (event.getAction()){
-                                                       case MotionEvent.ACTION_DOWN:{}
-                                                       case MotionEvent.ACTION_MOVE:{
-                                                           float value = event.getY() - y_size;
-                                                           if(value > 735)
-                                                               btn2.setY(735);
-                                                           else if(value < 0)
-                                                               btn2.setY(0);
-                                                           else
-                                                               btn2.setY(value);
-                                                           break;
-                                                       }
-                                                       default:{
-                                                           btn2.setY(compare_center - y_size);
-                                                       }
-                                                   }
-                                                   y2 = btn2.getY();
-                                                   Log.d("y2", String.valueOf(y2));
-                                                   return true;
-                                               }
-                                           }
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final float y_size = btn2.getHeight()/2;
+                final float compare_center = relativeLayout2.getMinimumHeight() + relativeLayout2.getHeight()/2;
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:{}
+                    case MotionEvent.ACTION_MOVE:{
+                        float value = event.getY() - y_size;
+                        if(value > 735)
+                            btn2.setY(735);
+                        else if(value < 0)
+                            btn2.setY(0);
+                        else
+                            btn2.setY(value);
+                        break;
+                        }
+                        default:{
+                            btn2.setY(compare_center - y_size);
+                            }
+                            }
+                            y2 = btn2.getY();
+                Log.d("y2", String.valueOf(y2));
+                return true;
+                }
+            }
         );
 
         return view;
     }//end of onCreateView
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data){
+        if(resultCode == getActivity().RESULT_OK){
+            switch (requestCode) {
+                case ACT_REQUEST_CODE:
+                    TimerTask sender = new TimerTask() {
+                        @Override
+                        public void run() {
+                            try {
+                                ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    Timer timer = new Timer();
+                    timer.schedule(sender, 0, 50);
+                    break;
+            }
+        }
+    }
 
 
 }
