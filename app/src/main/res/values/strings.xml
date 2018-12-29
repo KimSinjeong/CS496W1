@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">CS496W1</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="right_bar">Right Bar</string>
+    <string name="left_bar">Left Bar</string>
+    <string name="button">Button</string>
+    <!-- TODO: Remove or change this placeholder text -->
 </resources>

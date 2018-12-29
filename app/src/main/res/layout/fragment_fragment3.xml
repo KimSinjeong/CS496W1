@@ -1,14 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Fragment3">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="3" />
 
+    <RelativeLayout
+        android:id="@+id/relative3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="58dp"
+            android:layout_height="386dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="74dp"
+            android:layout_marginTop="55dp"
+            android:contentDescription="@string/left_bar"
+            android:src="@drawable/bar"
+            android:visibility="visible" />
+
+        <RelativeLayout
+            android:id="@+id/relative_im6"
+            android:layout_width="61dp"
+            android:layout_height="343dp"
+            android:layout_alignStart="@+id/imageView6"
+            android:layout_alignTop="@+id/imageView6"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="24dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+            <ImageView
+                android:id="@+id/imageView11"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="@string/button"
+                android:src="@drawable/button" />
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/imageView7"
+            android:layout_width="58dp"
+            android:layout_height="386dp"
+            android:layout_alignTop="@+id/imageView6"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="74dp"
+            android:contentDescription="@string/right_bar"
+            android:src="@drawable/bar" />
+
+        <RelativeLayout
+            android:id="@+id/relative_im7"
+            android:layout_width="61dp"
+            android:layout_height="343dp"
+            android:layout_alignStart="@+id/imageView7"
+            android:layout_alignTop="@+id/imageView7"
+            android:layout_marginStart="-1dp"
+            android:layout_marginTop="22dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+            <ImageView
+                android:id="@+id/imageView12"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerInParent="true"
+                android:contentDescription="@string/button"
+                android:src="@drawable/button" />
+        </RelativeLayout>
+
+    </RelativeLayout>
 </FrameLayout>
