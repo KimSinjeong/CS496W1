@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="15sp"
-        android:backgroundTint="#9500ff"
+        android:backgroundTint="@color/BTinactive"
         android:src="@drawable/icon_272" />
 
     <RelativeLayout
@@ -84,17 +84,6 @@
                 android:contentDescription="@string/button"
                 android:src="@drawable/button" />
         </RelativeLayout>
-
-        <TextView
-            android:id="@+id/BT_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="BT Setting"
-            android:textSize="18sp" />
 
     </RelativeLayout>
 </FrameLayout>

@@ -30,6 +30,12 @@ public class Fragment3 extends Fragment {
     final int BT_REQUEST_CODE = 1;
     final int ACT_REQUEST_CODE = 1;
 
+    boolean issending = false;
+    TimerTask sender;
+    Timer timer;
+
+    private FloatingActionButton BTbtn;
+
     public static Fragment3 newInstance() {
         Bundle args = new Bundle();
         Fragment3 fragment = new Fragment3();
@@ -56,7 +62,7 @@ public class Fragment3 extends Fragment {
         final RelativeLayout relativeLayout1 = view.findViewById(R.id.relative_im6);
         final RelativeLayout relativeLayout2 = view.findViewById(R.id.relative_im7);
 
-        final FloatingActionButton BTbtn = view.findViewById(R.id.BT);
+        BTbtn = view.findViewById(R.id.BT);
 
         // "블루투스 연결" 버튼 클릭 이벤트
         BTbtn.setOnClickListener(new View.OnClickListener() {
@@ -139,7 +145,7 @@ public class Fragment3 extends Fragment {
         if(resultCode == getActivity().RESULT_OK){
             switch (requestCode) {
                 case ACT_REQUEST_CODE:
-                    TimerTask sender = new TimerTask() {
+                    sender = new TimerTask() {
                         @Override
                         public void run() {
                             float tmpy1 = y1-424.0f;
@@ -152,17 +158,37 @@ public class Fragment3 extends Fragment {
                             try {
                                 //ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
                                 ConnectBluetoothActivity.outputStream.write(new byte[]{(byte)(bty1 | bty2)});
+                                BTbtn.setBackgroundColor(getContext().getResources().getColor(R.color.BTactive));
+                                issending = true;
                             }
                             catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
                     };
-                    Timer timer = new Timer();
+                    timer = new Timer();
                     timer.schedule(sender, 0, 100);
                     break;
             }
         }
+    }
+
+    @Override
+    public void onDestroyView(){
+        super.onDestroyView();
+        if(!issending) {
+            try {
+                ConnectBluetoothActivity.outputStream.close();
+                timer.cancel();
+                timer = null;
+                BTbtn.setBackgroundColor(getContext().getResources().getColor(R.color.BTinactive));
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            issending = false;
+        }
+
     }
 
 
