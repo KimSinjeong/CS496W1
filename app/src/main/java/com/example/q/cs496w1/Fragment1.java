@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -24,11 +25,12 @@ import org.json.JSONObject;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import android.widget.Adapter;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileWriter;
 
 
 /**
@@ -60,8 +62,6 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
 
         layer = inflater.inflate(R.layout.fragment_fragment1, container, false);
         listview = layer.findViewById(R.id.list_frag1);
-        JSONArray jarray = new JSONArray();
-        String[] str = new String[jarray.length()];
         // Fab
         fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);
@@ -83,7 +83,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     public void onResume(){
         super.onResume();
         JSONArray jarray = new JSONArray();
-        if(Permissioncheck()) {
+        if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
             jarray = getAddr();
         }else{
             Toast toast = Toast.makeText(getContext(),"권한이 거부되어 표시할 수 없습니다.", Toast.LENGTH_LONG);
@@ -94,22 +94,46 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             Log.d("Fragment1","lenth is 0");
         }
         String[] str = new String[jarray.length()];
-        for(int i=0;i<jarray.length();i++){
-            try{
+
+        for (int i = 0; i < jarray.length(); i++) {
+            try {
                 JSONObject jsonObject = jarray.getJSONObject(i);
                 String name = jsonObject.getString("name");
                 String number = jsonObject.getString("number");
                 str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
                 Log.d("Fragment1", str[i]);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
+        if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
+            try {
+                String ContactsPath = getExternalPath();
+                File file = new File(ContactsPath + "Contacts");
+
+                if (!file.isDirectory())
+                    file.mkdir();
+                FileWriter filew = new FileWriter(ContactsPath + "Contacts/JSONContacts");
+                for (int i = 0; i < jarray.length(); i++) {
+                    JSONObject jsonObject = jarray.getJSONObject(i);
+                    filew.write(jsonObject.toString());
+                }
+
+                filew.flush();
+                filew.close();
+            }catch (Exception e) {
+                    e.printStackTrace();
+            }
+        }else{
+            Toast toast = Toast.makeText(getContext(),"권한이 거부되어 저장할 수 없습니다.", Toast.LENGTH_LONG);
+            toast.show();
+        }
+
+
         ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,str);
         listViewAdapter.notifyDataSetChanged();
         listview.setAdapter(listViewAdapter);
-
     }
 
     @Override
@@ -118,7 +142,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         switch (id) {
             case R.id.fab:
                 anim();
-                Toast.makeText(getContext(), "Floating Action Button", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "FABs", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.adduser:
                 anim();
@@ -129,12 +153,9 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                 Toast.makeText(getContext(), "Delete Users", Toast.LENGTH_SHORT).show();
                 break;
         }
-
-
     }
 
     public void anim() {
-
         if (isFabOpen) {
             fab1.startAnimation(fab_close);
             fab2.startAnimation(fab_close);
@@ -149,8 +170,6 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             isFabOpen = true;
         }
     }
-
-
 
     private JSONArray getAddr(){
         Cursor cursor = null;
@@ -195,16 +214,28 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         return PermissionChecker.checkSelfPermission(getContext(), permission);
     }
 
-    public boolean Permissioncheck() {
-        if (checkselfpermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+    public boolean Permissioncheck(String permission) {
+        if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, 100);
-            if (checkselfpermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, 100);
+            if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
                 return true;
             } else {
                 return false;
             }
         }
+    }
+
+    public String getExternalPath(){
+        String sdPath = "";
+        String ext = Environment.getExternalStorageState();
+        if (ext.equals(Environment.MEDIA_MOUNTED))
+            sdPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+        else{
+            sdPath = getContext().getFilesDir() + "";
+            Toast.makeText(getContext().getApplicationContext(), sdPath, Toast.LENGTH_SHORT).show();
+        }
+        return sdPath;
     }
 }
