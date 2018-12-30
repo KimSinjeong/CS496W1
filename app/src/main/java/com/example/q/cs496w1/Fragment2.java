@@ -36,6 +36,7 @@ public class Fragment2 extends Fragment {
 
     GridView gridView;
     PhotoAdapter photoAdapter;
+    String TAG;
 
     public static Fragment2 newInstance() {
         Bundle args = new Bundle();
@@ -52,18 +53,19 @@ public class Fragment2 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        TAG = "fragment2";
         View view = inflater.inflate(R.layout.fragment_fragment2, container, false);
         gridView =  view.findViewById(R.id.gridView);
 
         photoAdapter = new PhotoAdapter(getContext());
         gridView.setAdapter(photoAdapter);
-        /* 이 부분 이벤트는 클릭했을 때 이미지가 확대되어 보여주는 부분.
+        // 이 부분 이벤트는 클릭했을 때 이미지가 확대되어 보여주는 부분.
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
            public void onItemClick(AdapterView parent, View v, int position, long id){
                photoAdapter.callImageViewer(position);
            }
         });
-        */
+
 
         // Inflate the layout for this fragment
         return view;
@@ -72,6 +74,7 @@ public class Fragment2 extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
+        Log.d(TAG,"onResume");
 
     }
 
@@ -90,6 +93,13 @@ public class Fragment2 extends Fragment {
             if(Permissioncheck()){
                 getThumbInfo(thumbsIDList, thumbsDataList);
             }
+        }
+
+        public final void callImageViewer(int selectedIndex){
+            Intent i = new Intent(mContext, SingleImageViewer.class);
+            String imgPath = getImageInfo(imgData, geoData, thumbsIDList.get(selectedIndex));
+            i.putExtra("filename", imgPath);
+            startActivityForResult(i, 1);
         }
 
         public boolean deleteSelected(int sIndex){
@@ -116,15 +126,16 @@ public class Fragment2 extends Fragment {
             ImageView imageView;
             if (convertView == null){
                 imageView = new ImageView(mContext);
-                imageView.setLayoutParams(new GridView.LayoutParams(95, 95));
+                imageView.setLayoutParams(new GridView.LayoutParams(gridView.getColumnWidth(), gridView.getColumnWidth()));
                 imageView.setAdjustViewBounds(false);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setPadding(2, 2, 2, 2);
+                imageView.setPadding(1, 1, 1, 1);
+                Log.d(TAG,"convertView is generated");
             }else{
                 imageView = (ImageView) convertView;
             }
             BitmapFactory.Options bo = new BitmapFactory.Options();
-            bo.inSampleSize = 8;
+            bo.inSampleSize = 32;
             Bitmap bmp = BitmapFactory.decodeFile(thumbsDataList.get(position), bo);
             Bitmap resized = Bitmap.createScaledBitmap(bmp, 95, 95, true);
             imageView.setImageBitmap(resized);
@@ -144,19 +155,16 @@ public class Fragment2 extends Fragment {
                 String thumbsID;
                 String thumbsImageID;
                 String thumbsData;
-                String data;
-                String imgSize;
+
 
                 int thumbsIDCol = imageCursor.getColumnIndex(MediaStore.Images.Media._ID);
                 int thumbsDataCol = imageCursor.getColumnIndex(MediaStore.Images.Media.DATA);
                 int thumbsImageIDCol = imageCursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME);
-                int thumbsSizeCol = imageCursor.getColumnIndex(MediaStore.Images.Media.SIZE);
                 int num = 0;
                 do {
                     thumbsID = imageCursor.getString(thumbsIDCol);
                     thumbsData = imageCursor.getString(thumbsDataCol);
                     thumbsImageID = imageCursor.getString(thumbsImageIDCol);
-                    imgSize = imageCursor.getString(thumbsSizeCol);
                     num++;
                     if (thumbsImageID != null){
                         thumbsIDs.add(thumbsID);
