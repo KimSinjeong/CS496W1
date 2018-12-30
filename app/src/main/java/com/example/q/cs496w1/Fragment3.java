@@ -118,12 +118,12 @@ public class Fragment3 extends Fragment {
                         else
                             btn2.setY(value);
                         break;
-                        }
-                        default:{
-                            btn2.setY(compare_center - y_size);
-                            }
-                            }
-                            y2 = btn2.getY();
+                    }
+                    default:{
+                        btn2.setY(compare_center - y_size);
+                    }
+                }
+                y2 = btn2.getY();
                 Log.d("y2", String.valueOf(y2));
                 return true;
                 }
@@ -141,8 +141,16 @@ public class Fragment3 extends Fragment {
                     TimerTask sender = new TimerTask() {
                         @Override
                         public void run() {
+                            float tmpy1 = y1-424.0f;
+                            float tmpy2 = y2-424.0f;
+                            tmpy1 = tmpy1 < 0.0f ? -tmpy1/424.0f*7.0f : -tmpy1/311.0f*8.0f;
+                            tmpy2 = tmpy2 < 0.0f ? -tmpy2/424.0f*7.0f : -tmpy2/311.0f*8.0f;
+                            byte bty1 = (byte)((0x0f & (int)tmpy1) << 4);
+                            byte bty2 = (byte)(0x0f & (int)tmpy2);
+
                             try {
-                                ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
+                                //ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
+                                ConnectBluetoothActivity.outputStream.write(new byte[]{(byte)(bty1 | bty2)});
                             }
                             catch (IOException e) {
                                 e.printStackTrace();
@@ -150,7 +158,7 @@ public class Fragment3 extends Fragment {
                         }
                     };
                     Timer timer = new Timer();
-                    timer.schedule(sender, 0, 50);
+                    timer.schedule(sender, 0, 100);
                     break;
             }
         }
