@@ -1,11 +1,19 @@
 package com.example.q.cs496w1;
 
-public class SinglePhoto {
+public class SingleContact {
+
     String name;
+    String phone;
     int resId;
 
-    public SinglePhoto(String name, int resId) {
+    public SingleContact(String name, String mobile) {
         this.name = name;
+        this.phone = mobile;
+    }
+
+    public SingleContact(String name, String mobile, int resId) {
+        this.name = name;
+        this.phone = mobile;
         this.resId = resId;
     }
 
@@ -17,6 +25,12 @@ public class SinglePhoto {
         this.resId = resId;
     }
 
+    public String getPhone() { return phone; }
+
+    public void setPhone(String mobile) {
+        this.phone = mobile;
+    }
+
     public String getName() {
         return name;
     }
@@ -24,5 +38,5 @@ public class SinglePhoto {
     public void setName(String name) {
         this.name = name;
     }
-
 }
+

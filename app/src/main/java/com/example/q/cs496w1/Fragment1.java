@@ -1,6 +1,5 @@
 package com.example.q.cs496w1;
 
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -18,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,12 +24,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
-
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,7 +42,9 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     private FloatingActionButton fab, fab1, fab2;
 
     View layer;
-    ListView listview;
+    ListView listView;
+    ContactAdapter adapter;
+
     public static Fragment1 newInstance() {
         Bundle args = new Bundle();
         Fragment1 fragment = new Fragment1();
@@ -61,7 +62,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
 
         layer = inflater.inflate(R.layout.fragment_fragment1, container, false);
-        listview = layer.findViewById(R.id.list_frag1);
+        listView = layer.findViewById(R.id.list_frag1);
         // Fab
         fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);
@@ -93,6 +94,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         if(jarray.length()==0){
             Log.d("Fragment1","lenth is 0");
         }
+        adapter = new ContactAdapter();
         String[] str = new String[jarray.length()];
 
         for (int i = 0; i < jarray.length(); i++) {
@@ -102,12 +104,14 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                 String number = jsonObject.getString("number");
                 str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
                 Log.d("Fragment1", str[i]);
+                adapter.addItem(new SingleContact(name, number, R.drawable.icon_273));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        listView.setAdapter(adapter);
 
-        if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
+        if(Permissioncheck(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             try {
                 String ContactsPath = getExternalPath();
                 File file = new File(ContactsPath + "Contacts");
@@ -130,10 +134,11 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             toast.show();
         }
 
-
+        /*
         ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,str);
         listViewAdapter.notifyDataSetChanged();
-        listview.setAdapter(listViewAdapter);
+        listView.setAdapter(listViewAdapter);
+        */
     }
 
     @Override
@@ -237,5 +242,40 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             Toast.makeText(getContext().getApplicationContext(), sdPath, Toast.LENGTH_SHORT).show();
         }
         return sdPath;
+    }
+
+    class ContactAdapter extends BaseAdapter {
+        ArrayList<SingleContact> items = new ArrayList<SingleContact>();
+
+        @Override
+        public int getCount() {
+            return items.size();
+        }
+
+        public void addItem(SingleContact item) {
+            items.add(item);
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return items.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup viewGroup) {
+            SingleContactView view = new SingleContactView(getContext());
+
+            SingleContact item = items.get(position);
+            view.setName(item.getName());
+            view.setPhone(item.getPhone());
+            view.setImage(item.getResId());
+
+            return view;
+        }
     }
 }
