@@ -8,12 +8,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class SingleImageViewer extends AppCompatActivity{
     private Context mContext;
     private static int imgWidth;
     private static int imgHeight;
+    /**
+     * 이미지를 보여줄 뷰를 담고있을 레이아웃 객체
+     */
+    LinearLayout viewerContainer;
 
+    /**
+     * 이미지를 보여줄 뷰
+     */
+    ImageDisplayView displayView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,5 +41,26 @@ public class SingleImageViewer extends AppCompatActivity{
         ImageView iv = (ImageView)findViewById(R.id.imageView10);
         Bitmap bm = BitmapFactory.decodeFile(imgPath, bfo);
         iv.setImageBitmap(bm);
+
+        init(bm);
     }
+
+    /**
+     * 초기화
+     */
+    private void init(Bitmap sourceBitmap) {
+        viewerContainer = findViewById(R.id.viewerContainer);
+        if (sourceBitmap != null) {
+            displayView = new ImageDisplayView(this);
+
+            displayView.setImageData(sourceBitmap);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
+
+            viewerContainer.addView(displayView, params);
+        }
+    }
+
+
 }
