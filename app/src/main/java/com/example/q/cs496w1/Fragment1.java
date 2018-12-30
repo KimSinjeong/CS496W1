@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 
@@ -20,6 +21,9 @@ import android.view.ViewGroup;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -30,7 +34,12 @@ import android.widget.Toast;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Fragment1 extends Fragment {
+public class Fragment1 extends Fragment implements View.OnClickListener {
+
+    private Animation fab_open, fab_close;
+    private Boolean isFabOpen = false;
+    private FloatingActionButton fab, fab1, fab2;
+
     View layer;
     ListView listview;
     public static Fragment1 newInstance() {
@@ -53,6 +62,19 @@ public class Fragment1 extends Fragment {
         listview = layer.findViewById(R.id.list_frag1);
         JSONArray jarray = new JSONArray();
         String[] str = new String[jarray.length()];
+        // Fab
+        fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
+        fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);
+
+        fab = (FloatingActionButton) layer.findViewById(R.id.fab);
+        fab1 = (FloatingActionButton) layer.findViewById(R.id.adduser);
+        fab2 = (FloatingActionButton) layer.findViewById(R.id.deluser);
+
+        fab.setOnClickListener(this);
+        fab1.setOnClickListener(this);
+        fab2.setOnClickListener(this);
+
+        // Log.d(toString(listview.getItemsCanFocus()));
         return layer;
 
     }
@@ -87,7 +109,48 @@ public class Fragment1 extends Fragment {
         ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,str);
         listViewAdapter.notifyDataSetChanged();
         listview.setAdapter(listViewAdapter);
+
     }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id) {
+            case R.id.fab:
+                anim();
+                Toast.makeText(getContext(), "Floating Action Button", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.adduser:
+                anim();
+                Toast.makeText(getContext(), "Add Users", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.deluser:
+                anim();
+                Toast.makeText(getContext(), "Delete Users", Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+
+    }
+
+    public void anim() {
+
+        if (isFabOpen) {
+            fab1.startAnimation(fab_close);
+            fab2.startAnimation(fab_close);
+            fab1.setClickable(false);
+            fab2.setClickable(false);
+            isFabOpen = false;
+        } else {
+            fab1.startAnimation(fab_open);
+            fab2.startAnimation(fab_open);
+            fab1.setClickable(true);
+            fab2.setClickable(true);
+            isFabOpen = true;
+        }
+    }
+
+
 
     private JSONArray getAddr(){
         Cursor cursor = null;
@@ -144,25 +207,4 @@ public class Fragment1 extends Fragment {
             }
         }
     }
-
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 100: {
-                // If request is cancelled, the result
-                // arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-
-                } else {
-                    // Permission denied - Show a message
-                    // to inform the user that this app only works
-                    // with these permissions granted
-
-                }
-                return;
-            }
-
-        }
-    }
-
 }
