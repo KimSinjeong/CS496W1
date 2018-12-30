@@ -4,6 +4,7 @@ package com.example.q.cs496w1;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -14,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -26,7 +26,7 @@ import java.util.TimerTask;
  * A simple {@link Fragment} subclass.
  */
 public class Fragment3 extends Fragment {
-    float y1,y2;
+    float y1 = 424.0f,y2 = 424.0f;
     final int BT_REQUEST_CODE = 1;
     final int ACT_REQUEST_CODE = 1;
 
@@ -50,6 +50,14 @@ public class Fragment3 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(issending)
+            BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTactive)));
+
     }
 
     @Override
@@ -145,6 +153,7 @@ public class Fragment3 extends Fragment {
         if(resultCode == getActivity().RESULT_OK){
             switch (requestCode) {
                 case ACT_REQUEST_CODE:
+                    issending = true;
                     sender = new TimerTask() {
                         @Override
                         public void run() {
@@ -158,8 +167,6 @@ public class Fragment3 extends Fragment {
                             try {
                                 //ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
                                 ConnectBluetoothActivity.outputStream.write(new byte[]{(byte)(bty1 | bty2)});
-                                BTbtn.setBackgroundColor(getContext().getResources().getColor(R.color.BTactive));
-                                issending = true;
                             }
                             catch (IOException e) {
                                 e.printStackTrace();
@@ -173,6 +180,7 @@ public class Fragment3 extends Fragment {
         }
     }
 
+    /*
     @Override
     public void onDestroyView(){
         super.onDestroyView();
@@ -190,6 +198,7 @@ public class Fragment3 extends Fragment {
         }
 
     }
+    */
 
 
 }

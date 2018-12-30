@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="15sp"
-        android:backgroundTint="@color/BTinactive"
+        app:backgroundTint="@color/BTinactive"
         android:src="@drawable/icon_272" />
 
     <RelativeLayout
