@@ -1,8 +1,13 @@
 package com.example.q.cs496w1;
 
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.PermissionChecker;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,6 +88,15 @@ public class Fragment2 extends Fragment {
         public View getView(int position, View convertView, ViewGroup viewGroup) {
             SinglePhotoView view = new SinglePhotoView(getActivity().getApplicationContext());
 
+            Boolean hasPermission = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                hasPermission = Permissioncheck();
+            }
+
+            if(hasPermission){
+
+            }
+
             SinglePhoto item = items.get(position);
             view.setName(item.getName());
             view.setImage(item.getResId());
@@ -93,6 +107,25 @@ public class Fragment2 extends Fragment {
             Log.d("PhotoAdapter", "index : " + rowIndex + ", " + columnIndex);
 
             return view;
+        }
+    }
+
+    public int checkselfpermission(String permission) {
+        return PermissionChecker.checkSelfPermission(getContext(), permission);
+    }
+
+    public boolean Permissioncheck() {
+        if (checkselfpermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                checkselfpermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1052);
+            if (checkselfpermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    checkselfpermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
