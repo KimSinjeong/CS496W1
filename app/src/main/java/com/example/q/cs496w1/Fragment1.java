@@ -23,7 +23,10 @@ import org.json.JSONObject;
 
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -37,6 +40,8 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     private Boolean isFabOpen = false;
     private FloatingActionButton fab, fab1, fab2;
 
+    View layer;
+    ListView listview;
     public static Fragment1 newInstance() {
         Bundle args = new Bundle();
         Fragment1 fragment = new Fragment1();
@@ -53,6 +58,30 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        layer = inflater.inflate(R.layout.fragment_fragment1, container, false);
+        listview = layer.findViewById(R.id.list_frag1);
+        JSONArray jarray = new JSONArray();
+        String[] str = new String[jarray.length()];
+        // Fab
+        fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
+        fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);
+
+        fab = (FloatingActionButton) layer.findViewById(R.id.fab);
+        fab1 = (FloatingActionButton) layer.findViewById(R.id.adduser);
+        fab2 = (FloatingActionButton) layer.findViewById(R.id.deluser);
+
+        fab.setOnClickListener(this);
+        fab1.setOnClickListener(this);
+        fab2.setOnClickListener(this);
+
+        // Log.d(toString(listview.getItemsCanFocus()));
+        return layer;
+
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
         JSONArray jarray = new JSONArray();
         if(Permissioncheck()) {
             jarray = getAddr();
@@ -60,9 +89,9 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             Toast toast = Toast.makeText(getContext(),"권한이 거부되어 표시할 수 없습니다.", Toast.LENGTH_LONG);
             toast.show();
         }
-        View layout = inflater.inflate(R.layout.fragment_fragment1, container, false);
+
         if(jarray.length()==0){
-            Log.d("taesu","lenth is 0");
+            Log.d("Fragment1","lenth is 0");
         }
         String[] str = new String[jarray.length()];
         for(int i=0;i<jarray.length();i++){
@@ -71,32 +100,16 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                 String name = jsonObject.getString("name");
                 String number = jsonObject.getString("number");
                 str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
-                Log.d("taesu", str[i]);
-                Log.d("taesu", "HHIHIHI");
+                Log.d("Fragment1", str[i]);
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-        ListView listview = layout.findViewById(R.id.list_frag1);
-        String[] strange = {"hi","codit","vvvdvadfv"};
-        ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1,str);
 
+        ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,str);
+        listViewAdapter.notifyDataSetChanged();
         listview.setAdapter(listViewAdapter);
 
-        // Fab
-        fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
-        fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);
-
-        fab = (FloatingActionButton) layout.findViewById(R.id.fab);
-        fab1 = (FloatingActionButton) layout.findViewById(R.id.adduser);
-        fab2 = (FloatingActionButton) layout.findViewById(R.id.deluser);
-
-        fab.setOnClickListener(this);
-        fab1.setOnClickListener(this);
-        fab2.setOnClickListener(this);
-
-       // Log.d(toString(listview.getItemsCanFocus()));
-        return layout;
     }
 
     @Override

@@ -73,6 +73,7 @@ public class Fragment3 extends Fragment {
             }
         });
 
+        // 컨트롤러 터치를 하면 왼쪽 button이 이동하는 이벤트
         relativeLayout1.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -100,6 +101,7 @@ public class Fragment3 extends Fragment {
             }
         }
         );
+        // 컨트롤러 터치를 하면 오른쪽 button이 이동하는 이벤트
         relativeLayout2.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
