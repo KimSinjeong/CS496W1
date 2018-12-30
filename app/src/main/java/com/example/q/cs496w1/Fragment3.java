@@ -5,6 +5,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -55,7 +56,7 @@ public class Fragment3 extends Fragment {
         final RelativeLayout relativeLayout1 = view.findViewById(R.id.relative_im6);
         final RelativeLayout relativeLayout2 = view.findViewById(R.id.relative_im7);
 
-        final Button BTbtn = view.findViewById(R.id.BT);
+        final FloatingActionButton BTbtn = view.findViewById(R.id.BT);
 
         // "블루투스 연결" 버튼 클릭 이벤트
         BTbtn.setOnClickListener(new View.OnClickListener() {
