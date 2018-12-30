@@ -55,8 +55,41 @@ public class Fragment3 extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(issending)
+        if(issending) {
             BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTactive)));
+            BTbtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // 블루투스 커넥션 해제
+                    try {
+                        ConnectBluetoothActivity.outputStream.close();
+                        timer.cancel();
+                        timer = null;
+                        BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTinactive)));
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    issending = false;
+
+                    // 다시 클릭하면 블루투스 연결 Activity 실행
+                    BTbtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // 새 창에서 ConnectBluetoothActivity 실행
+                            Intent intent = new Intent(getActivity(), ConnectBluetoothActivity.class);
+                            int btPermission = ContextCompat.checkSelfPermission(getActivity().getBaseContext(), Manifest.permission.BLUETOOTH);
+
+                            if (btPermission == PackageManager.PERMISSION_GRANTED) {
+                                startActivityForResult(intent, ACT_REQUEST_CODE);
+                            } else
+                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.BLUETOOTH}, BT_REQUEST_CODE);
+                        }
+                    });
+                }
+            });
+
+        }
 
     }
 
@@ -82,9 +115,8 @@ public class Fragment3 extends Fragment {
 
                 if (btPermission == PackageManager.PERMISSION_GRANTED) {
                     startActivityForResult(intent, ACT_REQUEST_CODE);
-                }
-                else
-                    ActivityCompat.requestPermissions( getActivity(), new String[]{Manifest.permission.BLUETOOTH}, BT_REQUEST_CODE);
+                } else
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.BLUETOOTH}, BT_REQUEST_CODE);
             }
         });
 
