@@ -3,40 +3,51 @@ package com.example.q.cs496w1;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Fragment2 extends Fragment {
+    public static final int REQUEST_IMAGE_CAPTURE = 532;
+
+    private String imageFilePath;
+    private Uri photoUri;
 
     GridView gridView;
     PhotoAdapter photoAdapter;
     String TAG;
+    private FloatingActionButton Cam;
 
     public static Fragment2 newInstance() {
         Bundle args = new Bundle();
@@ -66,11 +77,30 @@ public class Fragment2 extends Fragment {
            }
         });
 
+        Cam = view.findViewById(R.id.cam);
+        Cam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(CamPermissioncheck())
+                    sendTakePhotoIntent();
+                else{
+                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 사진을 찍을 수 없습니다.", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
+
 
         // Inflate the layout for this fragment
         return view;
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.d(TAG,"onResume");
+
+    }
 
     class PhotoAdapter extends BaseAdapter {
         Context mContext;
@@ -82,14 +112,6 @@ public class Fragment2 extends Fragment {
 
         public PhotoAdapter(Context c){
             mContext = c;
-            thumbsDataList = new ArrayList<String>();
-            thumbsIDList = new ArrayList<String>();
-            if(Permissioncheck()){
-                getThumbInfo(thumbsIDList, thumbsDataList);
-            }
-        }
-
-        public void updatethumbnail(){
             thumbsDataList = new ArrayList<String>();
             thumbsIDList = new ArrayList<String>();
             if(Permissioncheck()){
@@ -240,6 +262,83 @@ public class Fragment2 extends Fragment {
 
             // other 'case' lines to check for other
             // permissions this app might request
+        }
+    }
+    // Taking a photo functionality.
+    private void sendTakePhotoIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName(), photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                Log.d("photo","카메라 앱 호출 직전");
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = timeStamp + "_";
+        String temppath = Environment.getExternalStorageDirectory().toString() + "/images";
+        File storageDir = new File(temppath);
+        Log.d("", temppath);
+        if (!storageDir.isDirectory())
+            storageDir.mkdir();
+        File image = File.createTempFile(
+                imageFileName,      /* prefix */
+                ".jpg",         /* suffix */
+                storageDir          /* directory */
+        );
+        imageFilePath = image.getAbsolutePath();
+        return image;
+    }
+
+    public boolean CamPermissioncheck() {
+        if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
+            if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
+            Toast.makeText(getContext(), "Image...", Toast.LENGTH_SHORT).show();
+
+            Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
+
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            ContextWrapper cw = new ContextWrapper(getContext());
+            File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+            File path = new File(dir, timeStamp);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(path);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            } catch(IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fos.close();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
