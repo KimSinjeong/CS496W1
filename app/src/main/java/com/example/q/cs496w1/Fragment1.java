@@ -1,8 +1,11 @@
 package com.example.q.cs496w1;
 
 import android.Manifest;
+import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,6 +32,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -101,9 +105,11 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                 JSONObject jsonObject = jarray.getJSONObject(i);
                 String name = jsonObject.getString("name");
                 String number = jsonObject.getString("number");
+                Long photoid = jsonObject.getLong("photoid");
+                Long id = jsonObject.getLong("id");
                 str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
                 Log.d("Fragment1", str[i]);
-                adapter.addItem(new SingleContact(name, number, R.drawable.icon_273));
+                adapter.addItem(new SingleContact(name, number, photoid, id));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -180,21 +186,26 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
             String phoneName = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
             String [] ad = new String[] {
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.Contacts.PHOTO_ID,
+                ContactsContract.Contacts._ID
             };
             cursor = getContext().getContentResolver().query(uri, ad, null, null, phoneName);
-            cursor.moveToFirst();
-            while(cursor.moveToNext()){
-                Log.d("json 받는부분",cursor.getString(0));
-                if(cursor.getString(1)!=null){
+            if(cursor.moveToFirst()) {
+                do {
+                    Log.d("json 받는부분", cursor.getString(0));
+                    if (cursor.getString(1) != null) {
                         JSONObject personinfo = new JSONObject();
                         Log.d("hi ", cursor.getString(0));
                         Log.d("hi ", cursor.getString(1));
-                        personinfo.put("name",cursor.getString(0));
-                        personinfo.put("number",cursor.getString(1));
+                        personinfo.put("name", cursor.getString(0));
+                        personinfo.put("number", cursor.getString(1));
+                        personinfo.put("photoid", cursor.getLong(2));
+                        personinfo.put("id", cursor.getLong(3));
                         personArray.put(personinfo);
-                }
+                    }
+                } while (cursor.moveToNext());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,8 +280,11 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             view.setName(item.getName());
             view.setPhone(item.getPhone());
             view.setImage(item.getResId());
-
+            view.setImage(item.getPhotoId(), item.getId());
             return view;
         }
     }
+
+    // Load contact photo
+
 }
