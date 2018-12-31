@@ -69,6 +69,7 @@ public class Fragment3 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        initSound();
     }
 
     @Override
@@ -94,6 +95,7 @@ public class Fragment3 extends Fragment {
                         e.printStackTrace();
                     }
                     issending = false;
+                    effectSound = false;
 
                     // 다시 클릭하면 블루투스 연결 Activity 실행
                     BTbtn.setOnClickListener(new View.OnClickListener() {
