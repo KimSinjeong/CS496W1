@@ -5,6 +5,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -30,11 +32,28 @@ public class Fragment3 extends Fragment {
     final int BT_REQUEST_CODE = 1;
     final int ACT_REQUEST_CODE = 1;
 
-    boolean issending = false;
+    boolean effectSound = false;
     TimerTask sender;
     Timer timer;
 
     private FloatingActionButton BTbtn;
+
+    // 효과음내기 관련 변수
+    private SoundPool soundPool;
+    boolean issending = false;
+    private int sound_beep;
+
+    private void initSound()
+    {
+        soundPool = new SoundPool( 5, AudioManager.STREAM_MUSIC, 0 );
+        sound_beep = soundPool.load( getContext(), R.raw.calldrop, 1 );
+    }
+
+    public void playSound()
+    {
+        soundPool.play( sound_beep, 1f, 1f, 0, 0, 1f );
+    }
+
 
     public static Fragment3 newInstance() {
         Bundle args = new Bundle();
@@ -50,12 +69,17 @@ public class Fragment3 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        initSound();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         if(issending) {
+            if(effectSound==false){
+                effectSound=true;
+                playSound();
+            }
             BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTactive)));
             BTbtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -71,6 +95,7 @@ public class Fragment3 extends Fragment {
                         e.printStackTrace();
                     }
                     issending = false;
+                    effectSound = false;
 
                     // 다시 클릭하면 블루투스 연결 Activity 실행
                     BTbtn.setOnClickListener(new View.OnClickListener() {
