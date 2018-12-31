@@ -97,7 +97,6 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
 
         for (int i = 0; i < jarray.length(); i++) {
             try {
-                // TODO: Should bring the thumbnail of a person.
                 JSONObject jsonObject = jarray.getJSONObject(i);
                 String name = jsonObject.getString("name");
                 String number = jsonObject.getString("number");
