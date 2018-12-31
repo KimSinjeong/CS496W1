@@ -28,6 +28,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -66,6 +68,7 @@ public class Fragment2 extends Fragment {
                              Bundle savedInstanceState) {
         TAG = "fragment2";
         View view = inflater.inflate(R.layout.fragment_fragment2, container, false);
+        /*
         gridView =  view.findViewById(R.id.gridView);
 
         photoAdapter = new PhotoAdapter(getContext());
@@ -88,17 +91,43 @@ public class Fragment2 extends Fragment {
                     toast.show();
                 }
             }
-        });
-
-
-        // Inflate the layout for this fragment
+        });*/
+        
         return view;
     }
 
     @Override
     public void onResume(){
         super.onResume();
+        TAG = "fragment2";
         Log.d(TAG,"onResume");
+        //View view = inflater.inflate(R.layout.fragment_fragment2, container, false);
+        View view = getView();
+        gridView =  view.findViewById(R.id.gridView);
+
+        photoAdapter = new PhotoAdapter(getContext());
+        gridView.setAdapter(photoAdapter);
+        // 이 부분 이벤트는 클릭했을 때 이미지가 확대되어 보여주는 부분.
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            public void onItemClick(AdapterView parent, View v, int position, long id){
+                photoAdapter.callImageViewer(position);
+            }
+        });
+
+        Cam = view.findViewById(R.id.cam);
+        Cam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(CamPermissioncheck())
+                    sendTakePhotoIntent();
+                else{
+                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 사진을 찍을 수 없습니다.", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
+
+
 
     }
 
@@ -162,7 +191,8 @@ public class Fragment2 extends Fragment {
             bo.inSampleSize = 32;
             Bitmap bmp = BitmapFactory.decodeFile(thumbsDataList.get(position), bo);
             Bitmap resized = Bitmap.createScaledBitmap(bmp, 95, 95, true);
-            imageView.setImageBitmap(resized);
+            //imageView.setImageBitmap(resized);
+            Glide.with(getContext()).load(resized).into(imageView);
 
             return imageView;
         }

@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
+
 public class SingleImageViewer extends AppCompatActivity{
     private Context mContext;
     private static int imgWidth;
@@ -51,6 +53,7 @@ public class SingleImageViewer extends AppCompatActivity{
         if (sourceBitmap != null) {
             displayView = new ImageDisplayView(this);
 
+            //Glide.with(getApplicationContext()).load(sourceBitmap).into(displayView);
             displayView.setImageData(sourceBitmap);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,

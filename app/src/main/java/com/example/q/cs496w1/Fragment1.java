@@ -279,7 +279,4 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             return view;
         }
     }
-
-    // Load contact photo
-
 }
