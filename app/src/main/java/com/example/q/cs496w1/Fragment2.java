@@ -187,12 +187,15 @@ public class Fragment2 extends Fragment {
             }else{
                 imageView = (ImageView) convertView;
             }
+
+            /*
             BitmapFactory.Options bo = new BitmapFactory.Options();
             bo.inSampleSize = 32;
             Bitmap bmp = BitmapFactory.decodeFile(thumbsDataList.get(position), bo);
             Bitmap resized = Bitmap.createScaledBitmap(bmp, 95, 95, true);
-            //imageView.setImageBitmap(resized);
-            Glide.with(getContext()).load(resized).into(imageView);
+            imageView.setImageBitmap(resized);*/
+            Glide.with(getContext()).load(thumbsDataList.get(position)).into(imageView);
+
 
             return imageView;
         }
