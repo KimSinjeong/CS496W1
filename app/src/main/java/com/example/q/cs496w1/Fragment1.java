@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -75,7 +74,6 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         fab1.setOnClickListener(this);
         fab2.setOnClickListener(this);
 
-        // Log.d(toString(listview.getItemsCanFocus()));
         return layer;
 
     }
@@ -99,6 +97,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
 
         for (int i = 0; i < jarray.length(); i++) {
             try {
+                // TODO: Should bring the thumbnail of a person.
                 JSONObject jsonObject = jarray.getJSONObject(i);
                 String name = jsonObject.getString("name");
                 String number = jsonObject.getString("number");
@@ -134,13 +133,9 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             toast.show();
         }
 
-        /*
-        ArrayAdapter<String> listViewAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,str);
-        listViewAdapter.notifyDataSetChanged();
-        listView.setAdapter(listViewAdapter);
-        */
     }
 
+    // TODO: Make the Activities to add/delete users.
     @Override
     public void onClick(View v) {
         int id = v.getId();
