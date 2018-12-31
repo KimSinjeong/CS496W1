@@ -60,7 +60,7 @@ public class Fragment2 extends Fragment {
         // Required empty public constructor
     }
 
-
+    // TODO: Immediate update for new pictures.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
