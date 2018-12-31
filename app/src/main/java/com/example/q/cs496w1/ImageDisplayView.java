@@ -33,6 +33,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
     int lastX;
     int lastY;
 
+    public float totalTranslatedX;
+    public float totalTranslatedY;
+
     Bitmap sourceBitmap;
 
     Matrix mMatrix;
@@ -46,8 +49,19 @@ public class ImageDisplayView extends View implements OnTouchListener {
     float scaleRatio;
     float totalScaleRatio;
 
-    float displayWidth = 0.0F;
-    float displayHeight = 0.0F;
+    public float displayWidth = 0.0F;
+    public float displayHeight = 0.0F;
+
+    public int bitmapWidth;
+    public int bitmapHeight;
+
+    public void setBitmapWidth(int bitmapWidth) {
+        this.bitmapWidth = bitmapWidth;
+    }
+
+    public int getBitmapHeight() {
+        return bitmapHeight;
+    }
 
     int displayCenterX = 0;
     int displayCenterY = 0;
@@ -57,12 +71,6 @@ public class ImageDisplayView extends View implements OnTouchListener {
     public float endX;
     public float endY;
 
-    public float pivotX;
-    public float pivotY;
-
-    private float[] movingX = new float[2];
-    private float[] movingY = new float[2];
-
     public static float MAX_SCALE_RATIO = 5.0F;
     public static float MIN_SCALE_RATIO = 0.1F;
 
@@ -71,7 +79,6 @@ public class ImageDisplayView extends View implements OnTouchListener {
     int oldPointerCount = 0;
     boolean isScrolling = false;
     float distanceThreshold = 3.0F;
-
 
     /**
      * 생성자
@@ -92,7 +99,6 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param context
      * @param attrs
      */
-
     public ImageDisplayView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -110,154 +116,10 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
         lastX = -1;
         lastY = -1;
+        totalTranslatedX = 0f;
+        totalTranslatedY = 0f;
 
         setOnTouchListener(this);
-    }
-
-    /**
-     * 터치 이벤트 처리
-     */
-    public boolean onTouch(View v, MotionEvent ev) {
-        final int action = ev.getAction();
-
-        int pointerCount = ev.getPointerCount();
-        Log.d(TAG, "Pointer Count : " + pointerCount);
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-
-                if (pointerCount == 1) {
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    startX = curX;
-                    startY = curY;
-
-                    movingX[0] = 0.0f;
-                    movingY[0] = 0.0f;
-
-                } else if (pointerCount == 2) {
-                    float curX = ev.getX(1);
-                    float curY = ev.getY(1);
-
-                    endX = curX;
-                    endY = curY;
-
-                    movingX[1] = 0.0f;
-                    movingY[1] = 0.0f;
-
-                    oldDistance = 0.0F;
-
-                    isScrolling = true;
-
-                }
-
-                return true;
-            case MotionEvent.ACTION_MOVE:
-
-                if (pointerCount == 1) {
-
-                    if (isScrolling) {	// just double tap scrolling -> ignore it
-                        return true;
-                    }
-                    Log.d(TAG, "터치가 하나만 있고 하나가 움직임");
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    if (startX == 0.0F) {
-                        startX = curX;
-                        startY = curY;
-
-                        return true;
-                    }
-
-                    float offsetX = startX - curX;
-                    float offsetY = startY - curY;
-
-                    if (oldPointerCount == 2) {
-
-                    } else {
-                        Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
-
-                        if (totalScaleRatio > 1.0F) {
-                            moveImage(-offsetX, -offsetY);
-                        }
-
-                        startX = curX;
-                        startY = curY;
-                    }
-
-                } else if (pointerCount == 2) {
-
-                    Log.d(TAG, "두개가 터치되고 있고 움직이고 잇음");
-                    float x1 = ev.getX(0);
-                    float y1 = ev.getY(0);
-                    float x2 = ev.getX(1);
-                    float y2 = ev.getY(1);
-
-                    float dx = x1 - x2;
-                    float dy = y1 - y2;
-                    float distance = new Double(Math.sqrt(new Float(dx * dx + dy * dy).doubleValue())).floatValue();
-
-                    float outScaleRatio = 0.0F;
-                    if (oldDistance == 0.0F) {
-                        oldDistance = distance;
-
-                        break;
-                    }
-
-                    if (distance > oldDistance) {
-                        if ((distance-oldDistance) < distanceThreshold) {
-                            return true;
-                        }
-
-                        outScaleRatio = scaleRatio + (oldDistance / distance * 0.05F);
-                    } else if (distance < oldDistance) {
-                        if ((oldDistance-distance) < distanceThreshold) {
-                            return true;
-                        }
-
-                        outScaleRatio = scaleRatio - (distance / oldDistance * 0.05F);
-                    }
-
-                    if (outScaleRatio < MIN_SCALE_RATIO || outScaleRatio > MAX_SCALE_RATIO) {
-                        Log.d(TAG, "Invalid scaleRatio : " + outScaleRatio);
-                    } else {
-                        Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
-                        scaleImage(outScaleRatio);
-                    }
-
-                    oldDistance = distance;
-                }
-
-                oldPointerCount = pointerCount;
-
-                break;
-
-            case MotionEvent.ACTION_UP:
-
-                if (pointerCount == 1) {
-
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    float offsetX = startX - curX;
-                    float offsetY = startY - curY;
-
-                    if (oldPointerCount == 2) {
-
-                    } else {
-                        moveImage(-offsetX, -offsetY);
-                    }
-
-                } else {
-                    isScrolling = false;
-                }
-
-                return true;
-        }
-
-        return true;
     }
 
     /**
@@ -265,6 +127,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
      */
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (w > 0 && h > 0) {
+            Log.d(TAG,"OnsizeChanged 실행");
             newImage(w, h);
 
             redraw();
@@ -274,23 +137,44 @@ public class ImageDisplayView extends View implements OnTouchListener {
     /**
      * 새로운 비트맵 이미지를 메모리에 생성
      *
-     * @param width
-     * @param height
+     * @param widthi
+     * @param heighti
      */
-    public void newImage(int width, int height) {
-        Log.d(TAG,"new image is drawn");
-        Bitmap img = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    public void newImage(int widthi, int heighti) {
+        Bitmap img = Bitmap.createBitmap(widthi, heighti, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas();
         canvas.setBitmap(img);
 
         mBitmap = img;
         mCanvas = canvas;
 
-        displayWidth = (float)width;
-        displayHeight = (float)height;
+        displayWidth = (float)widthi;
+        displayHeight = (float)heighti;
 
-        displayCenterX = width/2;
-        displayCenterY = height/2;
+
+        displayCenterX = widthi/2;
+        displayCenterY = heighti/2;
+
+        int width,height;
+        float ratio;
+        if (sourceWidth > sourceHeight) {
+            // landscape
+            ratio = (float) sourceWidth / displayWidth;
+            width = (int)displayWidth;
+            height = (int)(sourceHeight / ratio);
+        } else if (sourceHeight > sourceWidth) {
+            // portrait
+            ratio = (float) sourceHeight / displayHeight;
+            height = (int)displayHeight;
+            width = (int)(sourceWidth / ratio);
+        } else {
+            // square
+            height = (int)displayHeight;
+            width = (int)displayWidth;
+            ratio = 1;
+        }
+
+        scaleImage(1/ratio);
     }
 
     public void drawBackground(Canvas canvas) {
@@ -345,6 +229,156 @@ public class ImageDisplayView extends View implements OnTouchListener {
     }
 
 
+    /**
+     * 터치 이벤트 처리
+     */
+    public boolean onTouch(View v, MotionEvent ev) {
+        final int action = ev.getAction();
+
+        int pointerCount = ev.getPointerCount();
+        Log.d(TAG, "Pointer Count : " + pointerCount);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+
+                if (pointerCount == 1) {
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    startX = curX;
+                    startY = curY;
+
+                } else if (pointerCount == 2) {
+                    oldDistance = 0.0F;
+
+                    isScrolling = true;
+                }
+
+                return true;
+            case MotionEvent.ACTION_MOVE:
+
+                if (pointerCount == 1) {
+
+                    if (isScrolling) {	// just double tap scrolling -> ignore it
+                        return true;
+                    }
+
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    if (startX == 0.0F) {
+                        startX = curX;
+                        startY = curY;
+
+                        return true;
+                    }
+
+                    float offsetX = startX - curX;
+                    float offsetY = startY - curY;
+
+                    if (oldPointerCount == 2) {
+
+                    } else {
+                        Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
+
+                        if (totalScaleRatio > 1.0F) {
+                            moveImage(-offsetX, -offsetY);
+                        }
+
+                        startX = curX;
+                        startY = curY;
+                    }
+
+                } else if (pointerCount == 2) {
+
+                    float x1 = ev.getX(0);
+                    float y1 = ev.getY(0);
+                    float x2 = ev.getX(1);
+                    float y2 = ev.getY(1);
+
+                    float dx = x1 - x2;
+                    float dy = y1 - y2;
+                    float distance = new Double(Math.sqrt(new Float(dx * dx + dy * dy).doubleValue())).floatValue();
+
+                    float outScaleRatio = 0.0F;
+                    if (oldDistance == 0.0F) {
+                        oldDistance = distance;
+
+                        break;
+                    }
+
+                    if (distance > oldDistance) {
+                        if ((distance-oldDistance) < distanceThreshold) {
+                            return true;
+                        }
+
+                        outScaleRatio = scaleRatio + (oldDistance / distance * 0.05F);
+                    } else if (distance < oldDistance) {
+                        if ((oldDistance-distance) < distanceThreshold) {
+                            return true;
+                        }
+
+                        outScaleRatio = scaleRatio - (distance / oldDistance * 0.05F);
+                    }
+
+                    if (outScaleRatio < MIN_SCALE_RATIO || outScaleRatio > MAX_SCALE_RATIO) {
+                        Log.d(TAG, "Invalid scaleRatio : " + outScaleRatio);
+                    } else {
+                        Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
+                        scaleImage(outScaleRatio);
+                    }
+
+                    oldDistance = distance;
+                }
+
+                oldPointerCount = pointerCount;
+
+                break;
+
+            case MotionEvent.ACTION_UP:
+
+                if (pointerCount == 1) {
+                    Log.d(TAG, "MOTION UP이 실행되었습니다. 그리고 POINTER COUNTER는 1입니다.");
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    float offsetX = startX - curX;
+                    float offsetY = startY - curY;
+
+                    if (oldPointerCount == 2) {
+
+                    } else {
+                        moveImage(-offsetX, -offsetY);
+                    }
+
+                    updateScale();
+
+                } else {
+                    isScrolling = false;
+                }
+
+                return true;
+        }
+
+        return true;
+    }
+
+    /**
+     * 축소 액션을 취했는데 기본으로 보여준 image 보다 작아지면 기본 이미지 크기로 업데이트함.
+     *
+     */
+    private void updateScale(){
+        if(totalScaleRatio<1){
+            Log.d(TAG, "UPDATE SCALE 함수가실행되었습니다.");
+            mMatrix.postScale(1/totalScaleRatio,1/totalScaleRatio,bitmapCenterX, bitmapCenterY);
+            mMatrix.postTranslate(-totalTranslatedX,-totalTranslatedY);
+            totalScaleRatio = 1;
+            totalTranslatedX = 0;
+            totalTranslatedY = 0;
+            redraw();
+        }
+        Log.d("태그", displayWidth + " * " + displayHeight + ", source : " + sourceWidth + " * " + sourceHeight);
+    }
 
 
     /**
@@ -354,6 +388,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
      */
     private void scaleImage(float inScaleRatio) {
         Log.d(TAG, "scaleImage() called : " + inScaleRatio);
+
 
         mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
         mMatrix.postRotate(0);
@@ -372,8 +407,10 @@ public class ImageDisplayView extends View implements OnTouchListener {
     private void moveImage(float offsetX, float offsetY) {
         Log.d(TAG, "moveImage() called : " + offsetX + ", " + offsetY);
 
+        mMatrix.postTranslate(offsetX, offsetY);
 
-
+        totalTranslatedX += offsetX/totalScaleRatio;
+        totalTranslatedY += offsetY/totalScaleRatio;
 
         redraw();
     }

@@ -40,16 +40,6 @@ public class SingleImageViewer extends AppCompatActivity{
             }
         });
 
-        final ViewTreeObserver observer= viewerContainer.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        imgWidth = viewerContainer.getMeasuredWidth();
-                        Log.d("Log", "Height: " + viewerContainer.getWidth());
-                    }
-                });
-
         //전송메세지
         Intent i = getIntent();
         Bundle extras = i.getExtras();
@@ -59,29 +49,7 @@ public class SingleImageViewer extends AppCompatActivity{
         BitmapFactory.Options bfo = new BitmapFactory.Options();
         bfo.inSampleSize = 1;
         Bitmap bm = BitmapFactory.decodeFile(imgPath, bfo);
-        imgWidth = 1080;
-        imgHeight = 1584;
-        Log.d("onCreaete", "Height: " + imgHeight);
-        Log.d("onCreate", "Height: " + imgWidth);
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        if (width > height) {
-            // landscape
-            double ratio = (double) width / imgWidth;
-            width = imgWidth;
-            height = (int)(height / ratio);
-        } else if (height > width) {
-            // portrait
-            float ratio = (float) height / imgHeight;
-            height = imgHeight;
-            width = (int)(width / ratio);
-        } else {
-            // square
-            height = imgHeight;
-            width = imgWidth;
-        }
-        Bitmap resized = Bitmap.createScaledBitmap(bm,width,height,false);
-        init(resized);
+        init(bm);
 
     }
 
