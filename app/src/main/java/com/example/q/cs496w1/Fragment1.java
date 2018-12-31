@@ -1,11 +1,8 @@
 package com.example.q.cs496w1;
 
 import android.Manifest;
-import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,7 +29,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
