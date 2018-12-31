@@ -71,12 +71,6 @@ public class Fragment2 extends Fragment {
         return view;
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        Log.d(TAG,"onResume");
-
-    }
 
     class PhotoAdapter extends BaseAdapter {
         Context mContext;
@@ -88,6 +82,14 @@ public class Fragment2 extends Fragment {
 
         public PhotoAdapter(Context c){
             mContext = c;
+            thumbsDataList = new ArrayList<String>();
+            thumbsIDList = new ArrayList<String>();
+            if(Permissioncheck()){
+                getThumbInfo(thumbsIDList, thumbsDataList);
+            }
+        }
+
+        public void updatethumbnail(){
             thumbsDataList = new ArrayList<String>();
             thumbsIDList = new ArrayList<String>();
             if(Permissioncheck()){
@@ -216,4 +218,28 @@ public class Fragment2 extends Fragment {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1052: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && checkselfpermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                        checkselfpermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+                    photoAdapter.getThumbInfo(photoAdapter.thumbsIDList, photoAdapter.thumbsDataList);
+
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(getContext(), "권한이 거부되었습니다", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
 }

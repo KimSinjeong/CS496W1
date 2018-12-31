@@ -278,6 +278,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param height
      */
     public void newImage(int width, int height) {
+        Log.d(TAG,"new image is drawn");
         Bitmap img = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas();
         canvas.setBitmap(img);
