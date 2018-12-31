@@ -29,6 +29,7 @@ public class SingleImageViewer extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_image_viewer);
         mContext = this;
+        viewerContainer = findViewById(R.id.viewerContainer);
 
         //전송메세지
         Intent i = getIntent();
@@ -38,9 +39,7 @@ public class SingleImageViewer extends AppCompatActivity{
         // 완성된 이미지 보여주기;
         BitmapFactory.Options bfo = new BitmapFactory.Options();
         bfo.inSampleSize = 1;
-        ImageView iv = (ImageView)findViewById(R.id.imageView10);
         Bitmap bm = BitmapFactory.decodeFile(imgPath, bfo);
-        iv.setImageBitmap(bm);
 
         init(bm);
     }
@@ -49,7 +48,6 @@ public class SingleImageViewer extends AppCompatActivity{
      * 초기화
      */
     private void init(Bitmap sourceBitmap) {
-        viewerContainer = findViewById(R.id.viewerContainer);
         if (sourceBitmap != null) {
             displayView = new ImageDisplayView(this);
 

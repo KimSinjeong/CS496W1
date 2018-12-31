@@ -54,6 +54,14 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
     public float startX;
     public float startY;
+    public float endX;
+    public float endY;
+
+    public float pivotX;
+    public float pivotY;
+
+    private float[] movingX = new float[2];
+    private float[] movingY = new float[2];
 
     public static float MAX_SCALE_RATIO = 5.0F;
     public static float MIN_SCALE_RATIO = 0.1F;
@@ -63,6 +71,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
     int oldPointerCount = 0;
     boolean isScrolling = false;
     float distanceThreshold = 3.0F;
+
 
     /**
      * 생성자
@@ -83,6 +92,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param context
      * @param attrs
      */
+
     public ImageDisplayView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -102,6 +112,152 @@ public class ImageDisplayView extends View implements OnTouchListener {
         lastY = -1;
 
         setOnTouchListener(this);
+    }
+
+    /**
+     * 터치 이벤트 처리
+     */
+    public boolean onTouch(View v, MotionEvent ev) {
+        final int action = ev.getAction();
+
+        int pointerCount = ev.getPointerCount();
+        Log.d(TAG, "Pointer Count : " + pointerCount);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+
+                if (pointerCount == 1) {
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    startX = curX;
+                    startY = curY;
+
+                    movingX[0] = 0.0f;
+                    movingY[0] = 0.0f;
+
+                } else if (pointerCount == 2) {
+                    float curX = ev.getX(1);
+                    float curY = ev.getY(1);
+
+                    endX = curX;
+                    endY = curY;
+
+                    movingX[1] = 0.0f;
+                    movingY[1] = 0.0f;
+
+                    oldDistance = 0.0F;
+
+                    isScrolling = true;
+
+                }
+
+                return true;
+            case MotionEvent.ACTION_MOVE:
+
+                if (pointerCount == 1) {
+
+                    if (isScrolling) {	// just double tap scrolling -> ignore it
+                        return true;
+                    }
+                    Log.d(TAG, "터치가 하나만 있고 하나가 움직임");
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    if (startX == 0.0F) {
+                        startX = curX;
+                        startY = curY;
+
+                        return true;
+                    }
+
+                    float offsetX = startX - curX;
+                    float offsetY = startY - curY;
+
+                    if (oldPointerCount == 2) {
+
+                    } else {
+                        Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
+
+                        if (totalScaleRatio > 1.0F) {
+                            moveImage(-offsetX, -offsetY);
+                        }
+
+                        startX = curX;
+                        startY = curY;
+                    }
+
+                } else if (pointerCount == 2) {
+
+                    Log.d(TAG, "두개가 터치되고 있고 움직이고 잇음");
+                    float x1 = ev.getX(0);
+                    float y1 = ev.getY(0);
+                    float x2 = ev.getX(1);
+                    float y2 = ev.getY(1);
+
+                    float dx = x1 - x2;
+                    float dy = y1 - y2;
+                    float distance = new Double(Math.sqrt(new Float(dx * dx + dy * dy).doubleValue())).floatValue();
+
+                    float outScaleRatio = 0.0F;
+                    if (oldDistance == 0.0F) {
+                        oldDistance = distance;
+
+                        break;
+                    }
+
+                    if (distance > oldDistance) {
+                        if ((distance-oldDistance) < distanceThreshold) {
+                            return true;
+                        }
+
+                        outScaleRatio = scaleRatio + (oldDistance / distance * 0.05F);
+                    } else if (distance < oldDistance) {
+                        if ((oldDistance-distance) < distanceThreshold) {
+                            return true;
+                        }
+
+                        outScaleRatio = scaleRatio - (distance / oldDistance * 0.05F);
+                    }
+
+                    if (outScaleRatio < MIN_SCALE_RATIO || outScaleRatio > MAX_SCALE_RATIO) {
+                        Log.d(TAG, "Invalid scaleRatio : " + outScaleRatio);
+                    } else {
+                        Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
+                        scaleImage(outScaleRatio);
+                    }
+
+                    oldDistance = distance;
+                }
+
+                oldPointerCount = pointerCount;
+
+                break;
+
+            case MotionEvent.ACTION_UP:
+
+                if (pointerCount == 1) {
+
+                    float curX = ev.getX();
+                    float curY = ev.getY();
+
+                    float offsetX = startX - curX;
+                    float offsetY = startY - curY;
+
+                    if (oldPointerCount == 2) {
+
+                    } else {
+                        moveImage(-offsetX, -offsetY);
+                    }
+
+                } else {
+                    isScrolling = false;
+                }
+
+                return true;
+        }
+
+        return true;
     }
 
     /**
@@ -188,137 +344,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
     }
 
 
-    /**
-     * 터치 이벤트 처리
-     */
-    public boolean onTouch(View v, MotionEvent ev) {
-        final int action = ev.getAction();
 
-        int pointerCount = ev.getPointerCount();
-        Log.d(TAG, "Pointer Count : " + pointerCount);
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-
-                if (pointerCount == 1) {
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    startX = curX;
-                    startY = curY;
-
-                } else if (pointerCount == 2) {
-                    oldDistance = 0.0F;
-
-                    isScrolling = true;
-                }
-
-                return true;
-            case MotionEvent.ACTION_MOVE:
-
-                if (pointerCount == 1) {
-
-                    if (isScrolling) {	// just double tap scrolling -> ignore it
-                        return true;
-                    }
-
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    if (startX == 0.0F) {
-                        startX = curX;
-                        startY = curY;
-
-                        return true;
-                    }
-
-                    float offsetX = startX - curX;
-                    float offsetY = startY - curY;
-
-                    if (oldPointerCount == 2) {
-
-                    } else {
-                        Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
-
-                        if (totalScaleRatio > 1.0F) {
-                            moveImage(-offsetX, -offsetY);
-                        }
-
-                        startX = curX;
-                        startY = curY;
-                    }
-
-                } else if (pointerCount == 2) {
-
-                    float x1 = ev.getX(0);
-                    float y1 = ev.getY(0);
-                    float x2 = ev.getX(1);
-                    float y2 = ev.getY(1);
-
-                    float dx = x1 - x2;
-                    float dy = y1 - y2;
-                    float distance = new Double(Math.sqrt(new Float(dx * dx + dy * dy).doubleValue())).floatValue();
-
-                    float outScaleRatio = 0.0F;
-                    if (oldDistance == 0.0F) {
-                        oldDistance = distance;
-
-                        break;
-                    }
-
-                    if (distance > oldDistance) {
-                        if ((distance-oldDistance) < distanceThreshold) {
-                            return true;
-                        }
-
-                        outScaleRatio = scaleRatio + (oldDistance / distance * 0.05F);
-                    } else if (distance < oldDistance) {
-                        if ((oldDistance-distance) < distanceThreshold) {
-                            return true;
-                        }
-
-                        outScaleRatio = scaleRatio - (distance / oldDistance * 0.05F);
-                    }
-
-                    if (outScaleRatio < MIN_SCALE_RATIO || outScaleRatio > MAX_SCALE_RATIO) {
-                        Log.d(TAG, "Invalid scaleRatio : " + outScaleRatio);
-                    } else {
-                        Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
-                        scaleImage(outScaleRatio);
-                    }
-
-                    oldDistance = distance;
-                }
-
-                oldPointerCount = pointerCount;
-
-                break;
-
-            case MotionEvent.ACTION_UP:
-
-                if (pointerCount == 1) {
-
-                    float curX = ev.getX();
-                    float curY = ev.getY();
-
-                    float offsetX = startX - curX;
-                    float offsetY = startY - curY;
-
-                    if (oldPointerCount == 2) {
-
-                    } else {
-                        moveImage(-offsetX, -offsetY);
-                    }
-
-                } else {
-                    isScrolling = false;
-                }
-
-                return true;
-        }
-
-        return true;
-    }
 
     /**
      * 확대/축소
@@ -345,7 +371,8 @@ public class ImageDisplayView extends View implements OnTouchListener {
     private void moveImage(float offsetX, float offsetY) {
         Log.d(TAG, "moveImage() called : " + offsetX + ", " + offsetY);
 
-        mMatrix.postTranslate(offsetX, offsetY);
+
+
 
         redraw();
     }
