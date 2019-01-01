@@ -66,8 +66,7 @@ public class Fragment2 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        TAG = "fragment2";
-        View view = inflater.inflate(R.layout.fragment_fragment2, container, false);
+
         /*
         gridView =  view.findViewById(R.id.gridView);
 
@@ -93,7 +92,10 @@ public class Fragment2 extends Fragment {
             }
         });*/
 
-        return view;
+
+        TAG = "fragment2";
+
+        return inflater.inflate(R.layout.fragment_fragment2, container, false);
     }
 
     @Override
@@ -113,22 +115,17 @@ public class Fragment2 extends Fragment {
                 photoAdapter.callImageViewer(position);
             }
         });
-
         Cam = view.findViewById(R.id.cam);
         Cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(CamPermissioncheck())
+                if(CamPermissioncheck()==PackageManager.PERMISSION_GRANTED)
                     sendTakePhotoIntent();
                 else{
-                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 사진을 찍을 수 없습니다.", Toast.LENGTH_LONG);
-                    toast.show();
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
                 }
             }
         });
-
-
-
     }
 
     class PhotoAdapter extends BaseAdapter {
@@ -290,6 +287,14 @@ public class Fragment2 extends Fragment {
                 }
                 return;
             }
+            case REQUEST_IMAGE_CAPTURE:{
+                if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    sendTakePhotoIntent();
+                }else{
+                    Toast.makeText(getContext(), "권한이 거부되었습니다", Toast.LENGTH_SHORT).show();
+                }
+            }
 
             // other 'case' lines to check for other
             // permissions this app might request
@@ -332,17 +337,8 @@ public class Fragment2 extends Fragment {
         return image;
     }
 
-    public boolean CamPermissioncheck() {
-        if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
-            if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+    public int CamPermissioncheck() {
+        return checkselfpermission(Manifest.permission.CAMERA);
     }
 
     @Override

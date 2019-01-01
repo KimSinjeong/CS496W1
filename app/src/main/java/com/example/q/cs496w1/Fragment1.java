@@ -45,6 +45,8 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     ListView listView;
     ContactAdapter adapter;
 
+    JSONArray jarray;
+
     private final int ADD_USER_CODE = 1;
 
     public static Fragment1 newInstance() {
@@ -85,60 +87,13 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     @Override
     public void onResume(){
         super.onResume();
-        JSONArray jarray = new JSONArray();
-        if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
-            jarray = getAddr();
-        }else{
-            Log.d("권한 거부", "");
-            Toast toast = Toast.makeText(getContext(),"권한이 거부되어 표시할 수 없습니다.", Toast.LENGTH_LONG);
-            toast.show();
-        }
-
-        if(jarray.length()==0){
-            Log.d("Fragment1","lenth is 0");
-        }
         adapter = new ContactAdapter();
-        String[] str = new String[jarray.length()];
-
-        for (int i = 0; i < jarray.length(); i++) {
-            try {
-                JSONObject jsonObject = jarray.getJSONObject(i);
-                String name = jsonObject.getString("name");
-                String number = jsonObject.getString("number");
-                Long photoid = jsonObject.getLong("photoid");
-                Long id = jsonObject.getLong("id");
-                str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
-                Log.d("Fragment1", str[i]);
-                adapter.addItem(new SingleContact(name, number, photoid, id));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        listView.setAdapter(adapter);
-
-        if(Permissioncheck(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            try {
-                String ContactsPath = getExternalPath();
-                File file = new File(ContactsPath + "Contacts");
-
-                if (!file.isDirectory())
-                    file.mkdir();
-                FileWriter filew = new FileWriter(ContactsPath + "Contacts/JSONContacts");
-                for (int i = 0; i < jarray.length(); i++) {
-                    JSONObject jsonObject = jarray.getJSONObject(i);
-                    filew.write(jsonObject.toString());
-                }
-
-                filew.flush();
-                filew.close();
-            }catch (Exception e) {
-                    e.printStackTrace();
-            }
+        if(PermissionChecker.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            contactsShow();
         }else{
-            Toast toast = Toast.makeText(getContext(),"권한이 거부되어 저장할 수 없습니다.", Toast.LENGTH_LONG);
-            toast.show();
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CONTACTS}, 100);
         }
-
+        adapter.notifyDataSetChanged();
     }
 
     // TODO: Make the Activities to delete users.
@@ -274,20 +229,86 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         return personArray;
     }
 
-    public int checkselfpermission(String permission) {
-        return PermissionChecker.checkSelfPermission(getContext(), permission);
+    public void contactsShow(){
+        jarray = new JSONArray();
+
+        jarray = getAddr();
+
+        if(jarray.length()==0){
+            Log.d("Fragment1","lenth is 0");
+        }
+        adapter = new ContactAdapter();
+        String[] str = new String[jarray.length()];
+
+        for (int i = 0; i < jarray.length(); i++) {
+            try {
+                JSONObject jsonObject = jarray.getJSONObject(i);
+                String name = jsonObject.getString("name");
+                String number = jsonObject.getString("number");
+                Long photoid = jsonObject.getLong("photoid");
+                Long id = jsonObject.getLong("id");
+                str[i] = ("이름 : " + name + "\n" + "번호 : " + number);
+                Log.d("Fragment1", str[i]);
+                adapter.addItem(new SingleContact(name, number, photoid, id));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        listView.setAdapter(adapter);
+        if(PermissionChecker.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            saveContacts(jarray);
+        }else{
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+        }
     }
 
-    public boolean Permissioncheck(String permission) {
-        if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, 100);
-            if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                return true;
-            } else {
-                return false;
+    public void saveContacts(JSONArray jarray){
+        try {
+            String ContactsPath = getExternalPath();
+            File file = new File(ContactsPath + "Contacts");
+
+            if (!file.isDirectory())
+                file.mkdir();
+            FileWriter filew = new FileWriter(ContactsPath + "Contacts/JSONContacts");
+            for (int i = 0; i < jarray.length(); i++) {
+                JSONObject jsonObject = jarray.getJSONObject(i);
+                filew.write(jsonObject.toString());
             }
+
+            filew.flush();
+            filew.close();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 100: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    contactsShow();
+                } else {
+                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 보여줄 수 없습니다.", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                return;
+            }
+            case 200:{
+                if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    saveContacts(jarray);
+                }else{
+                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 저장할 수 없습니다.", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 
