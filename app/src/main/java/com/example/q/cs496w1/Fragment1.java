@@ -41,6 +41,8 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
     ListView listView;
     ContactAdapter adapter;
 
+    private final int ADD_USER_CODE = 1;
+
     public static Fragment1 newInstance() {
         Bundle args = new Bundle();
         Fragment1 fragment = new Fragment1();
@@ -135,7 +137,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
 
     }
 
-    // TODO: Make the Activities to add/delete users.
+    // TODO: Make the Activities to delete users.
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -147,11 +149,64 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             case R.id.adduser:
                 anim();
                 Toast.makeText(getContext(), "Add Users", Toast.LENGTH_SHORT).show();
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Intent intent = new Intent(getActivity(), AdduserActivity.class);
+                        int contactwPermission = ContextCompat.checkSelfPermission(getActivity().getBaseContext(), Manifest.permission.WRITE_CONTACTS);
+                        if (contactwPermission == PackageManager.PERMISSION_GRANTED) {
+                            startActivityForResult(intent, ADD_USER_CODE);
+                        } else
+                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_CONTACTS}, ADD_USER_CODE);
+                    }
+                });
                 break;
             case R.id.deluser:
                 anim();
                 Toast.makeText(getContext(), "Delete Users", Toast.LENGTH_SHORT).show();
                 break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(resultCode == getActivity().RESULT_OK) {
+            switch (requestCode) {
+                case ADD_USER_CODE:
+                    String name = data.getStringExtra("name");
+                    String phone = data.getStringExtra("phone");
+                    ArrayList < ContentProviderOperation > ops = new ArrayList <ContentProviderOperation> ();
+                    ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                            .build());
+                    if(name != null) {
+                        ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                                .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, name)
+                                .build());
+                    }
+                    if(phone != null) {
+                        ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phone)
+                                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+                                .build());
+                    }
+
+                    // Asking the Contact provider to create a new contact
+                    try {
+
+                        getContext().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+            }
         }
     }
 
@@ -215,7 +270,6 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         return personArray;
     }
 
-    // TODO: 2019-01-01 onRequestPermissionResult() 추가해서 오류를 해결할 수 있음.
     public int checkselfpermission(String permission) {
         return PermissionChecker.checkSelfPermission(getContext(), permission);
     }
@@ -228,22 +282,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
                 return true;
             } else {
-                Log.d("permissioncheck", " 퍼미션 체크");
                 return false;
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String[] permissions, int[] grantResults){
-        switch(requestCode){
-            case 100:{
-                if(checkselfpermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED){
-
-                }else{
-                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 저장할 수 없습니다.", Toast.LENGTH_LONG);
-                    toast.show();
-                }
             }
         }
     }

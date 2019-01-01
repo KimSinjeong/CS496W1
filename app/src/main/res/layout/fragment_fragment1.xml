@@ -11,11 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:layout_margin="5dp"
+        android:layout_margin="20dp"
         android:divider="#819ff7"
         android:dividerHeight=".25dp"
         android:listSelector="@drawable/listselector"
-        android:choiceMode="multipleChoice"/>
+        android:choiceMode="multipleChoice"
+        android:background="#30819ff7"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/deluser"

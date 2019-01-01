@@ -3,6 +3,7 @@
     package="com.example.q.cs496w1">
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -26,6 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ConnectBluetoothActivity" />
+        <activity android:name=".AdduserActivity" />
         <activity android:name=".SingleImageViewer"
             android:parentActivityName=".MainActivity"></activity>
         <provider
