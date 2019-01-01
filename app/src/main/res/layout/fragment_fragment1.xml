@@ -13,7 +13,8 @@
         android:layout_gravity="start"
         android:layout_margin="5dp"
         android:divider="#000000"
-        android:dividerHeight=".25dp" />
+        android:dividerHeight=".25dp"
+        android:listSelector="@drawable/listselector"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/deluser"
