@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 
 //TODO : 확대하는 UI 구현
-// TODO: 2019-01-01 사진이 옆으로 가면 검은화면이 보이지 않도록 update하는 기능 구현 
+
 
 /**
  * 이미지를 보여주면서 이벤트를 처리하기 위해 정의한 뷰 클래스
@@ -49,6 +49,8 @@ public class ImageDisplayView extends View implements OnTouchListener {
     float bitmapCenterX;
     float bitmapCenterY;
 
+    boolean actionDone;
+
     float scaleRatio;
     float totalScaleRatio;
 
@@ -57,14 +59,6 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
     public int bitmapWidth;
     public int bitmapHeight;
-
-    public void setBitmapWidth(int bitmapWidth) {
-        this.bitmapWidth = bitmapWidth;
-    }
-
-    public int getBitmapHeight() {
-        return bitmapHeight;
-    }
 
     int displayCenterX = 0;
     int displayCenterY = 0;
@@ -76,6 +70,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
     public float startY;
     public float endX;
     public float endY;
+
+    public float pivotX;
+    public float pivotY;
 
     public static float MAX_SCALE_RATIO = 5.0F;
     public static float MIN_SCALE_RATIO = 0.1F;
@@ -120,6 +117,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
         mPaint = new Paint();
         mMatrix = new Matrix();
 
+        actionDone = true;
         lastX = -1;
         lastY = -1;
         totalTranslatedX = 0f;
@@ -174,9 +172,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
             ratio = heightRatio;
         }
         if(ratio > 1){
+            scaleImage(1/ratio);
             displayedImageWidth = sourceWidth / ratio;
             displayedImageHeight = sourceHeight / ratio;
-            scaleImage(1/ratio);
         }else{
             displayedImageWidth = sourceWidth;
             displayedImageHeight = sourceHeight;
@@ -290,7 +288,11 @@ public class ImageDisplayView extends View implements OnTouchListener {
                         Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
 
                         if (totalScaleRatio > 1.0F) {
-                            moveImage(-offsetX, -offsetY);
+                            if(actionDone==true){
+                                moveImage(-offsetX, -offsetY);
+                            }else{
+                                actionDone=true;
+                            }
                         }
 
                         startX = curX;
@@ -388,10 +390,11 @@ public class ImageDisplayView extends View implements OnTouchListener {
             totalScaleRatio = 1;
             totalTranslatedX = 0;
             totalTranslatedY = 0;
-            redraw();
+
         }
         Log.d("태그", displayWidth + " * " + displayHeight + ", source : " + sourceWidth + " * " + sourceHeight);
     }
+
 
     /**
      * 이미지 이동시킬때 적당히 제한을 걸어도록 함.
@@ -400,23 +403,24 @@ public class ImageDisplayView extends View implements OnTouchListener {
         float curImageTranslatedY = totalTranslatedY*totalScaleRatio;
         float curImageTranslatedX = totalTranslatedX*totalScaleRatio;
         float imagemoveY=0f, imagemoveX=0f;
-        if(displayedImageWidth < displayWidth){
 
+        if(displayedImageHeight > displayHeight){
+            if(curImageTranslatedY > (displayedImageHeight-displayHeight)/2){
+                imagemoveY = -(curImageTranslatedY-(displayedImageHeight-displayHeight)/2);
+                moveImage(0,imagemoveY);
+            }else if(curImageTranslatedY < (-displayedImageHeight+displayHeight)/2){
+                imagemoveY = -(curImageTranslatedY+(displayedImageHeight-displayHeight)/2);
+                moveImage(0,imagemoveY);
+            }
         }
-        if(curImageTranslatedY > displayedImageHeight/2){
-            imagemoveY = -(curImageTranslatedY-displayedImageHeight/2);
-            moveImage(0,imagemoveY);
-        }else if(curImageTranslatedY < -displayedImageHeight/2){
-            imagemoveY = -(curImageTranslatedY+displayedImageHeight/2);
-            moveImage(0,imagemoveY);
-        }
-        if(curImageTranslatedX > displayedImageWidth/2){
-            imagemoveX = -(curImageTranslatedX-displayedImageWidth/2);
+        if(curImageTranslatedX > (displayedImageWidth-displayWidth)/2){
+            imagemoveX = -(curImageTranslatedX-(displayedImageWidth-displayWidth)/2);
             moveImage(imagemoveX,0);
-        }else if(curImageTranslatedX < -displayedImageWidth/2){
-            imagemoveX = -(curImageTranslatedX+displayedImageWidth/2);
+        }else if(curImageTranslatedX < -(displayedImageWidth-displayWidth)/2){
+            imagemoveX = -(curImageTranslatedX+(displayedImageWidth-displayWidth)/2);
             moveImage(imagemoveX,0);
         }
+        redraw();
         Log.d("업데이트 트랜스래이트",imagemoveX +" , " + imagemoveY);
     }
 
@@ -427,8 +431,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param inScaleRatio
      */
     private void scaleImage(float inScaleRatio) {
-
-
+        Log.d("비트맵 센터 데이터 확인", bitmapCenterX + " * " + bitmapCenterY);
         mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
         mMatrix.postRotate(0);
 
@@ -437,7 +440,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
         displayedImageWidth *= inScaleRatio;
         Log.d(TAG, "scaleImage() called : " + displayedImageWidth + " , " + displayedImageHeight);
 
-        redraw();
+
     }
 
     /**
@@ -448,13 +451,15 @@ public class ImageDisplayView extends View implements OnTouchListener {
      */
     private void moveImage(float offsetX, float offsetY) {
         Log.d(TAG, "moveImage() called : " + offsetX + ", " + offsetY);
+        if(displayedImageHeight > displayHeight){
+            mMatrix.postTranslate(0,offsetY);
+            totalTranslatedY += offsetY/totalScaleRatio;
+        }
+        if(displayedImageWidth > displayWidth ){
+            mMatrix.postTranslate(offsetX, 0);
+            totalTranslatedX += offsetX/totalScaleRatio;
+        }
 
-        mMatrix.postTranslate(offsetX, offsetY);
-
-        totalTranslatedX += offsetX/totalScaleRatio;
-        totalTranslatedY += offsetY/totalScaleRatio;
-
-        redraw();
     }
 
 
