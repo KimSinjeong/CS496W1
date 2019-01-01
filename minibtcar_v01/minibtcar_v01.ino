@@ -40,16 +40,16 @@ void loop() {
     
   }
 
-  if(lspd < 0) { digitalWrite(len, LOW); digitalWrite(ldir, HIGH); ltmp = -lspd; }
+  if(lspd < 0) { digitalWrite(len, LOW); digitalWrite(ldir, HIGH); ltmp = -lspd; divider = 8;}
   else if(lspd == 0) digitalWrite(len, HIGH);
-  else { digitalWrite(len, LOW); digitalWrite(ldir, LOW); ltmp = lspd;}
+  else { digitalWrite(len, LOW); digitalWrite(ldir, LOW); ltmp = lspd; divider = 7;}
 
-  if(rspd < 0) { digitalWrite(ren, LOW); digitalWrite(rdir, LOW); rtmp = -rspd; }
+  if(rspd < 0) { digitalWrite(ren, LOW); digitalWrite(rdir, LOW); rtmp = -rspd; divider = 8; }
   else if(rspd == 0) digitalWrite(ren, HIGH);
-  else { digitalWrite(ren, LOW); digitalWrite(rdir, HIGH); rtmp = rspd;}
+  else { digitalWrite(ren, LOW); digitalWrite(rdir, HIGH); rtmp = rspd; divider = 7; }
 
-  analogWrite(rpwm, 255 * rtmp / 8);
-  analogWrite(lpwm, 255 * ltmp / 8);
+  analogWrite(rpwm, 255 * rtmp / divider);
+  analogWrite(lpwm, 255 * ltmp / divider);
 
   delay(10);
 }
