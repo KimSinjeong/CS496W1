@@ -12,6 +12,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
+//TODO : 확대하는 UI 구현
+// TODO: 2019-01-01 사진이 옆으로 가면 검은화면이 보이지 않도록 update하는 기능 구현 
+
 /**
  * 이미지를 보여주면서 이벤트를 처리하기 위해 정의한 뷰 클래스
  *
@@ -65,6 +68,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
     int displayCenterX = 0;
     int displayCenterY = 0;
+
+    float displayedImageWidth;
+    float displayedImageHeight;
 
     public float startX;
     public float startY;
@@ -155,26 +161,28 @@ public class ImageDisplayView extends View implements OnTouchListener {
         displayCenterX = widthi/2;
         displayCenterY = heighti/2;
 
-        int width,height;
-        float ratio;
-        if (sourceWidth > sourceHeight) {
+        // 고화질 이미지를 화면 크기에 맞게 조정
+        float widthRatio, heightRatio, ratio;
+        widthRatio = (float) sourceWidth / displayWidth;
+        heightRatio = (float) sourceHeight / displayHeight;
+        if (widthRatio > heightRatio) {
             // landscape
-            ratio = (float) sourceWidth / displayWidth;
-            width = (int)displayWidth;
-            height = (int)(sourceHeight / ratio);
-        } else if (sourceHeight > sourceWidth) {
-            // portrait
-            ratio = (float) sourceHeight / displayHeight;
-            height = (int)displayHeight;
-            width = (int)(sourceWidth / ratio);
-        } else {
-            // square
-            height = (int)displayHeight;
-            width = (int)displayWidth;
-            ratio = 1;
-        }
+            ratio = widthRatio;
 
-        scaleImage(1/ratio);
+        } else {
+            // portrait
+            ratio = heightRatio;
+        }
+        if(ratio > 1){
+            displayedImageWidth = sourceWidth / ratio;
+            displayedImageHeight = sourceHeight / ratio;
+            scaleImage(1/ratio);
+        }else{
+            displayedImageWidth = sourceWidth;
+            displayedImageHeight = sourceHeight;
+        }
+        totalScaleRatio = 1;
+
     }
 
     public void drawBackground(Canvas canvas) {
@@ -289,6 +297,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
                         startY = curY;
                     }
 
+
                 } else if (pointerCount == 2) {
 
                     float x1 = ev.getX(0);
@@ -332,7 +341,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
                 }
 
                 oldPointerCount = pointerCount;
-
+                updateTranslate();
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -351,7 +360,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
                         moveImage(-offsetX, -offsetY);
                     }
 
+                    // 올바른 이미지로 업데이트
                     updateScale();
+                    updateTranslate();
 
                 } else {
                     isScrolling = false;
@@ -372,12 +383,41 @@ public class ImageDisplayView extends View implements OnTouchListener {
             Log.d(TAG, "UPDATE SCALE 함수가실행되었습니다.");
             mMatrix.postScale(1/totalScaleRatio,1/totalScaleRatio,bitmapCenterX, bitmapCenterY);
             mMatrix.postTranslate(-totalTranslatedX,-totalTranslatedY);
+            displayedImageWidth /= totalScaleRatio;
+            displayedImageHeight /= totalScaleRatio;
             totalScaleRatio = 1;
             totalTranslatedX = 0;
             totalTranslatedY = 0;
             redraw();
         }
         Log.d("태그", displayWidth + " * " + displayHeight + ", source : " + sourceWidth + " * " + sourceHeight);
+    }
+
+    /**
+     * 이미지 이동시킬때 적당히 제한을 걸어도록 함.
+     */
+    private void updateTranslate(){
+        float curImageTranslatedY = totalTranslatedY*totalScaleRatio;
+        float curImageTranslatedX = totalTranslatedX*totalScaleRatio;
+        float imagemoveY=0f, imagemoveX=0f;
+        if(displayedImageWidth < displayWidth){
+
+        }
+        if(curImageTranslatedY > displayedImageHeight/2){
+            imagemoveY = -(curImageTranslatedY-displayedImageHeight/2);
+            moveImage(0,imagemoveY);
+        }else if(curImageTranslatedY < -displayedImageHeight/2){
+            imagemoveY = -(curImageTranslatedY+displayedImageHeight/2);
+            moveImage(0,imagemoveY);
+        }
+        if(curImageTranslatedX > displayedImageWidth/2){
+            imagemoveX = -(curImageTranslatedX-displayedImageWidth/2);
+            moveImage(imagemoveX,0);
+        }else if(curImageTranslatedX < -displayedImageWidth/2){
+            imagemoveX = -(curImageTranslatedX+displayedImageWidth/2);
+            moveImage(imagemoveX,0);
+        }
+        Log.d("업데이트 트랜스래이트",imagemoveX +" , " + imagemoveY);
     }
 
 
@@ -387,13 +427,15 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param inScaleRatio
      */
     private void scaleImage(float inScaleRatio) {
-        Log.d(TAG, "scaleImage() called : " + inScaleRatio);
 
 
         mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
         mMatrix.postRotate(0);
 
         totalScaleRatio = totalScaleRatio * inScaleRatio;
+        displayedImageHeight *= inScaleRatio;
+        displayedImageWidth *= inScaleRatio;
+        Log.d(TAG, "scaleImage() called : " + displayedImageWidth + " , " + displayedImageHeight);
 
         redraw();
     }
