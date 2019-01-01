@@ -62,6 +62,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
 
         layer = inflater.inflate(R.layout.fragment_fragment1, container, false);
         listView = layer.findViewById(R.id.list_frag1);
+
         // Fab
         fab_open = AnimationUtils.loadAnimation(getContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getContext(), R.anim.fab_close);

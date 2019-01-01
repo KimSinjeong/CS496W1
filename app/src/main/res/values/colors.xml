@@ -5,5 +5,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="BTactive">#00bb55</color>
     <color name="BTinactive">#bb0000</color>
-
+    <drawable name="focused">#ff5500</drawable>
+    <drawable name="selected">#FF00FF</drawable>
 </resources>

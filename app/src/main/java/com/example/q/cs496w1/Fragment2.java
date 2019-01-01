@@ -196,7 +196,6 @@ public class Fragment2 extends Fragment {
             imageView.setImageBitmap(resized);*/
             Glide.with(getContext()).load(thumbsDataList.get(position)).into(imageView);
 
-
             return imageView;
         }
 
@@ -212,7 +211,6 @@ public class Fragment2 extends Fragment {
                 String thumbsID;
                 String thumbsImageID;
                 String thumbsData;
-
 
                 int thumbsIDCol = imageCursor.getColumnIndex(MediaStore.Images.Media._ID);
                 int thumbsDataCol = imageCursor.getColumnIndex(MediaStore.Images.Media.DATA);
