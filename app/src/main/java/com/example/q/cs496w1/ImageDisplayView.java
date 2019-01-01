@@ -36,6 +36,8 @@ public class ImageDisplayView extends View implements OnTouchListener {
     int lastX;
     int lastY;
 
+    public float SourceRatio;
+
     public float totalTranslatedX;
     public float totalTranslatedY;
 
@@ -56,9 +58,6 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
     public float displayWidth = 0.0F;
     public float displayHeight = 0.0F;
-
-    public int bitmapWidth;
-    public int bitmapHeight;
 
     int displayCenterX = 0;
     int displayCenterY = 0;
@@ -172,13 +171,16 @@ public class ImageDisplayView extends View implements OnTouchListener {
             ratio = heightRatio;
         }
         if(ratio > 1){
-            scaleImage(1/ratio);
+            SourceRatio = ratio;
+            mMatrix.postScale(1/ratio,1/ratio,bitmapCenterX,bitmapCenterY);
             displayedImageWidth = sourceWidth / ratio;
             displayedImageHeight = sourceHeight / ratio;
         }else{
             displayedImageWidth = sourceWidth;
             displayedImageHeight = sourceHeight;
+            SourceRatio = 1;
         }
+        Log.d("소스 라시오", SourceRatio + "");
         totalScaleRatio = 1;
 
     }
@@ -255,6 +257,9 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     startY = curY;
 
                 } else if (pointerCount == 2) {
+                    endX = ev.getX(1);
+                    endY = ev.getY(1);
+
                     oldDistance = 0.0F;
 
                     isScrolling = true;
@@ -283,7 +288,8 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     float offsetY = startY - curY;
 
                     if (oldPointerCount == 2) {
-
+                        startX = endX;
+                        startY = endY;
                     } else {
                         Log.d(TAG, "ACTION_MOVE : " + offsetX + ", " + offsetY);
 
@@ -337,6 +343,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     } else {
                         Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
                         scaleImage(outScaleRatio);
+
                     }
 
                     oldDistance = distance;
@@ -368,6 +375,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
                 } else {
                     isScrolling = false;
+
                 }
 
                 return true;
@@ -431,16 +439,27 @@ public class ImageDisplayView extends View implements OnTouchListener {
      * @param inScaleRatio
      */
     private void scaleImage(float inScaleRatio) {
-        Log.d("비트맵 센터 데이터 확인", bitmapCenterX + " * " + bitmapCenterY);
+
+        mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
+//        mMatrix.postRotate(0);
+
+
+        totalScaleRatio = totalScaleRatio * inScaleRatio;
+
+
+        displayedImageHeight *= inScaleRatio;
+        displayedImageWidth *= inScaleRatio;
+        Log.d(TAG, "scaleImage() called : " + displayedImageWidth + " , " + displayedImageHeight);
+    }
+
+    private void scaleImage(float inScaleRatio, float pX, float pY){
+        pX *= sourceWidth;
         mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
         mMatrix.postRotate(0);
 
         totalScaleRatio = totalScaleRatio * inScaleRatio;
         displayedImageHeight *= inScaleRatio;
         displayedImageWidth *= inScaleRatio;
-        Log.d(TAG, "scaleImage() called : " + displayedImageWidth + " , " + displayedImageHeight);
-
-
     }
 
     /**

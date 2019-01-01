@@ -10,22 +10,19 @@ import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-
 import android.support.v4.content.PermissionChecker;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -86,6 +83,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
             jarray = getAddr();
         }else{
+            Log.d("권한 거부", "");
             Toast toast = Toast.makeText(getContext(),"권한이 거부되어 표시할 수 없습니다.", Toast.LENGTH_LONG);
             toast.show();
         }
@@ -217,6 +215,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         return personArray;
     }
 
+    // TODO: 2019-01-01 onRequestPermissionResult() 추가해서 오류를 해결할 수 있음.
     public int checkselfpermission(String permission) {
         return PermissionChecker.checkSelfPermission(getContext(), permission);
     }
@@ -229,7 +228,22 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             if (checkselfpermission(permission) == PackageManager.PERMISSION_GRANTED) {
                 return true;
             } else {
+                Log.d("permissioncheck", " 퍼미션 체크");
                 return false;
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String[] permissions, int[] grantResults){
+        switch(requestCode){
+            case 100:{
+                if(checkselfpermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED){
+
+                }else{
+                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 저장할 수 없습니다.", Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         }
     }
