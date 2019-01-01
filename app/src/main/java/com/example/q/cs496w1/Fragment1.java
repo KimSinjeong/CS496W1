@@ -13,23 +13,20 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -92,6 +89,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
         if(Permissioncheck(Manifest.permission.READ_CONTACTS)) {
             jarray = getAddr();
         }else{
+            Log.d("권한 거부", "");
             Toast toast = Toast.makeText(getContext(),"권한이 거부되어 표시할 수 없습니다.", Toast.LENGTH_LONG);
             toast.show();
         }
@@ -339,6 +337,4 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
             return view;
         }
     }
-
-
 }
