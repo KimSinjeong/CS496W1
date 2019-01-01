@@ -303,7 +303,7 @@ public class Fragment2 extends Fragment {
     // Taking a photo functionality.
     private void sendTakePhotoIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) { // 카메라 앱이 있는지 체크
             File photoFile = null;
             try {
                 photoFile = createImageFile();
@@ -313,10 +313,13 @@ public class Fragment2 extends Fragment {
 
             if (photoFile != null) {
                 photoUri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName(), photoFile);
+                Log.d("포토 uri",photoUri + "");
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 Log.d("photo","카메라 앱 호출 직전");
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
+        }else {
+            Toast.makeText(getContext(),"실행할 수 있는 카메라 앱이 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -343,29 +346,41 @@ public class Fragment2 extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
-            Toast.makeText(getContext(), "Image...", Toast.LENGTH_SHORT).show();
-
-            Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
-
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            ContextWrapper cw = new ContextWrapper(getContext());
-            File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
-
-            File path = new File(dir, timeStamp);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(path);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            } catch(IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    fos.close();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode != getActivity().RESULT_OK){
+            return;
         }
+
+        switch (requestCode){
+            case REQUEST_IMAGE_CAPTURE:{
+                Toast.makeText(getContext(), "Image...", Toast.LENGTH_SHORT).show();
+
+
+                Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
+
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                ContextWrapper cw = new ContextWrapper(getContext());
+                File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+                File path = new File(dir, timeStamp);
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(path);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    Log.d("카메라 저장", "성공");
+                } catch(IOException e) {
+                    e.printStackTrace();
+                    Log.d("카메라 저장", "실패");
+                } finally {
+                    try {
+                        fos.close();
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } //case REQUST_IMAGE_CAPTURE
+        } //switch (requestCode)
+
     }
 }
