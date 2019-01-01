@@ -202,7 +202,7 @@ public class Fragment1 extends Fragment implements View.OnClickListener {
                         personArray.put(personinfo);
                     }
                 } while (cursor.moveToNext());
-            }
+        }
         } catch (Exception e) {
             e.printStackTrace();
         } finally{
