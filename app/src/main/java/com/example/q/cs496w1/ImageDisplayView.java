@@ -264,6 +264,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
                     isScrolling = true;
                 }
+                redraw();
 
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -296,6 +297,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
                         if (totalScaleRatio > 1.0F) {
                             if(actionDone==true){
                                 moveImage(-offsetX, -offsetY);
+                                updateTranslate();
                             }else{
                                 actionDone=true;
                             }
@@ -313,10 +315,12 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     float x2 = ev.getX(1);
                     float y2 = ev.getY(1);
 
+
                     float dx = x1 - x2;
                     float dy = y1 - y2;
                     float distance = new Double(Math.sqrt(new Float(dx * dx + dy * dy).doubleValue())).floatValue();
-
+                    pivotX = (x1+x2)/2;
+                    pivotY = (y1+y2)/2;
                     float outScaleRatio = 0.0F;
                     if (oldDistance == 0.0F) {
                         oldDistance = distance;
@@ -342,15 +346,16 @@ public class ImageDisplayView extends View implements OnTouchListener {
                         Log.d(TAG, "Invalid scaleRatio : " + outScaleRatio);
                     } else {
                         Log.d(TAG, "Distance : " + distance + ", ScaleRatio : " + outScaleRatio);
-                        scaleImage(outScaleRatio);
+                        scaleImage(distance/oldDistance,pivotX,pivotY);
+                        updateTranslate();
 
                     }
+
 
                     oldDistance = distance;
                 }
 
                 oldPointerCount = pointerCount;
-                updateTranslate();
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -364,14 +369,16 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     float offsetY = startY - curY;
 
                     if (oldPointerCount == 2) {
-
+                        startX = endX;
+                        startY = endY;
                     } else {
-                        moveImage(-offsetX, -offsetY);
+//                        moveImage(-offsetX, -offsetY);
                     }
 
                     // 올바른 이미지로 업데이트
                     updateScale();
                     updateTranslate();
+                    oldDistance=0;
 
                 } else {
                     isScrolling = false;
@@ -453,13 +460,19 @@ public class ImageDisplayView extends View implements OnTouchListener {
     }
 
     private void scaleImage(float inScaleRatio, float pX, float pY){
-        pX *= sourceWidth;
+        float disanceCenterpXbefoeScale = displayCenterX-pX;
+        float disanceCenterpYbefoeScale = displayCenterY-pY;
+        float distanceCenterXafterScale = disanceCenterpXbefoeScale*inScaleRatio;
+        float distanceCenterYafterScale = disanceCenterpYbefoeScale*inScaleRatio;
+        Log.d("피봇", pX + " * " + pY);
         mMatrix.postScale(inScaleRatio, inScaleRatio, bitmapCenterX, bitmapCenterY);
         mMatrix.postRotate(0);
 
         totalScaleRatio = totalScaleRatio * inScaleRatio;
         displayedImageHeight *= inScaleRatio;
         displayedImageWidth *= inScaleRatio;
+
+        moveImage(distanceCenterXafterScale-disanceCenterpXbefoeScale,distanceCenterYafterScale-disanceCenterpYbefoeScale);
     }
 
     /**
