@@ -247,7 +247,7 @@ public class ImageDisplayView extends View implements OnTouchListener {
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-
+                Log.d("태스", "ACTION DOWN실행 " + pointerCount);
                 if (pointerCount == 1) {
                     float curX = ev.getX();
                     float curY = ev.getY();
@@ -259,10 +259,10 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     endX = ev.getX(1);
                     endY = ev.getY(1);
 
-                    oldDistance = 0.0F;
 
                     isScrolling = true;
                 }
+                oldDistance = 0.0F;
                 redraw();
 
                 return true;
@@ -377,15 +377,25 @@ public class ImageDisplayView extends View implements OnTouchListener {
                     // 올바른 이미지로 업데이트
                     updateScale();
                     updateTranslate();
-                    oldDistance=0;
+                    oldDistance = 0.0f;
 
                 } else {
+                    Log.d(TAG, "MOTION UP이 실행되었습니다. 그리고 POINTER COUNTER는 2입니다.");
                     isScrolling = false;
-
                 }
 
                 return true;
+            case MotionEvent.ACTION_POINTER_2_UP:{
+                Log.d(TAG, "MOTION PINTER UP이 실행되었습니다. 그리고 POINTER COUNTER는 2입니다.");
+                oldDistance=0;
+                return true;
+            }
+//            case MotionEvent.ACTION_:{
+//                Log.d(TAG, "MOTION PINTER DOWN이 실행되었습니다. 그리고 POINTER COUNTER는 2입니다.");
+//                oldDistance=0;
+//            }
         }
+        Log.d("이건 꼭 봐야해", action + "");
 
         return true;
     }
