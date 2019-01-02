@@ -3,7 +3,6 @@ package com.example.q.cs496w1;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -18,10 +17,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -31,7 +30,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -357,13 +355,24 @@ public class Fragment2 extends Fragment {
 
 
                 Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
+                Log.d("비트맵 크기", bitmap.getWidth() + " * " + bitmap.getHeight());
+
 
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                ContextWrapper cw = new ContextWrapper(getContext());
-                File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
+                String ex_storage =Environment.getExternalStorageDirectory().getAbsolutePath();
+                Log.d("외부저장소 주소",ex_storage);
+                String folder_name = "/"+"images"+"/";
 
-                File path = new File(dir, timeStamp);
-                FileOutputStream fos = null;
+                String string_path = ex_storage + folder_name;
+
+
+//                ContextWrapper cw = new ContextWrapper(getContext());
+//                File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+//                File path = new File(dir, timeStamp);
+//                FileOutputStream fos = null;
+                File path;
+                /**
                 try {
                     fos = new FileOutputStream(path);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
@@ -378,6 +387,30 @@ public class Fragment2 extends Fragment {
                         e.printStackTrace();
                     }
                 }
+                */
+                /*
+                try{
+                    path = new File(string_path);
+                    Log.d("debug","1");
+                    if(!path.isDirectory()){
+                        Log.d("debug","1-2");
+                        path.mkdirs();
+                    }
+                    Log.d("debug","2");
+                    FileOutputStream out = new FileOutputStream(string_path+timeStamp+".jpg");
+                    Log.d("debug",string_path+timeStamp+".jpg");
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    Log.d("debug","4");
+                    out.flush();
+                    out.close();
+
+                }catch(FileNotFoundException exception){
+                    Log.e("FileNotFoundException", exception.getMessage());
+                }catch(IOException exception){
+                    Log.e("IOException", exception.getMessage());
+                }
+                Log.d("debug","5");
+                */
 
             } //case REQUST_IMAGE_CAPTURE
         } //switch (requestCode)
