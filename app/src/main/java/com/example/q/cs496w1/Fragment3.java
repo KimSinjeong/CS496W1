@@ -1,6 +1,5 @@
 package com.example.q.cs496w1;
 
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.media.MediaPlayer;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -29,6 +29,7 @@ import java.util.TimerTask;
  */
 public class Fragment3 extends Fragment {
     float y1 = 424.0f,y2 = 424.0f;
+    byte prevd = 0;
     final int BT_REQUEST_CODE = 1;
     final int ACT_REQUEST_CODE = 1;
 
@@ -39,21 +40,36 @@ public class Fragment3 extends Fragment {
     private FloatingActionButton BTbtn;
 
     // 효과음내기 관련 변수
-    private SoundPool soundPool;
+    private MediaPlayer connect, disconnect, driving;
+    private SoundPool exhaust;
     boolean issending = false;
-    private int sound_beep;
+    private int sound_exhaust;
 
     private void initSound()
     {
-        soundPool = new SoundPool( 5, AudioManager.STREAM_MUSIC, 0 );
-        sound_beep = soundPool.load( getContext(), R.raw.calldrop, 1 );
+        connect = MediaPlayer.create(getContext(), R.raw.calldrop);
+        connect.setLooping(false);
+
+        exhaust = new SoundPool( 5, AudioManager.STREAM_MUSIC, 0 );
+        sound_exhaust = exhaust.load( getContext(), R.raw.exhaust_loop, 1 );
+
+        disconnect = MediaPlayer.create(getContext(), R.raw.disconnect);
+        disconnect.setLooping(false);
+
+        driving = MediaPlayer.create(getContext(), R.raw.driving);
+        driving.setLooping(true);
+
+        connect.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            public void onCompletion(MediaPlayer mp) {
+                exhaustSound();
+            }
+        });
     }
 
-    public void playSound()
+    public void exhaustSound()
     {
-        soundPool.play( sound_beep, 1f, 1f, 0, 0, 1f );
+        exhaust.play( sound_exhaust, 1f, 1f, 0, -1, 1f );
     }
-
 
     public static Fragment3 newInstance() {
         Bundle args = new Bundle();
@@ -78,7 +94,7 @@ public class Fragment3 extends Fragment {
         if(issending) {
             if(effectSound==false){
                 effectSound=true;
-                playSound();
+                connect.start();
             }
             BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTactive)));
             BTbtn.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +102,14 @@ public class Fragment3 extends Fragment {
                 public void onClick(View v) {
                     // 블루투스 커넥션 해제
                     try {
+                        disconnect.start();
                         ConnectBluetoothActivity.outputStream.close();
+                        exhaust.stop(sound_exhaust);
+                        sound_exhaust = exhaust.load( getContext(), R.raw.exhaust_loop, 1 );
+                        driving.stop();
+                        driving.release();
+                        driving = MediaPlayer.create(getContext(), R.raw.driving);
+                        driving.setLooping(true);
                         timer.cancel();
                         timer = null;
                         BTbtn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.BTinactive)));
@@ -216,14 +239,32 @@ public class Fragment3 extends Fragment {
                         public void run() {
                             float tmpy1 = y1-424.0f;
                             float tmpy2 = y2-424.0f;
+
                             tmpy1 = tmpy1 < 0.0f ? -tmpy1/424.0f*7.0f : -tmpy1/311.0f*8.0f;
                             tmpy2 = tmpy2 < 0.0f ? -tmpy2/424.0f*7.0f : -tmpy2/311.0f*8.0f;
+
                             byte bty1 = (byte)((0x0f & (int)tmpy1) << 4);
                             byte bty2 = (byte)(0x0f & (int)tmpy2);
 
+                            byte detector = (byte)(bty1 | bty2);
+
+                            if (prevd != 0 && detector == 0) {
+                                driving.stop();
+                                driving.release();
+                                driving = MediaPlayer.create(getContext(), R.raw.driving);
+                                driving.setLooping(true);
+                                exhaust.resume(sound_exhaust);
+                            }
+                            else if (prevd == 0 && detector != 0) {
+                                driving.start();
+                                exhaust.pause(sound_exhaust);
+                            }
+
+                            prevd = detector;
+
                             try {
                                 //ConnectBluetoothActivity.outputStream.write(data.getStringExtra("result").getBytes());
-                                ConnectBluetoothActivity.outputStream.write(new byte[]{(byte)(bty1 | bty2)});
+                                ConnectBluetoothActivity.outputStream.write(new byte[]{detector});
                             }
                             catch (IOException e) {
                                 e.printStackTrace();
@@ -236,26 +277,4 @@ public class Fragment3 extends Fragment {
             }
         }
     }
-
-    /*
-    @Override
-    public void onDestroyView(){
-        super.onDestroyView();
-        if(!issending) {
-            try {
-                ConnectBluetoothActivity.outputStream.close();
-                timer.cancel();
-                timer = null;
-                BTbtn.setBackgroundColor(getContext().getResources().getColor(R.color.BTinactive));
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            issending = false;
-        }
-
-    }
-    */
-
-
 }
