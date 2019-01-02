@@ -66,8 +66,7 @@ public class Fragment2 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        TAG = "fragment2";
-        View view = inflater.inflate(R.layout.fragment_fragment2, container, false);
+
         /*
         gridView =  view.findViewById(R.id.gridView);
 
@@ -93,7 +92,10 @@ public class Fragment2 extends Fragment {
             }
         });*/
 
-        return view;
+
+        TAG = "fragment2";
+
+        return inflater.inflate(R.layout.fragment_fragment2, container, false);
     }
 
     @Override
@@ -113,22 +115,17 @@ public class Fragment2 extends Fragment {
                 photoAdapter.callImageViewer(position);
             }
         });
-
         Cam = view.findViewById(R.id.cam);
         Cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(CamPermissioncheck())
+                if(CamPermissioncheck()==PackageManager.PERMISSION_GRANTED)
                     sendTakePhotoIntent();
                 else{
-                    Toast toast = Toast.makeText(getContext(),"권한이 거부되어 사진을 찍을 수 없습니다.", Toast.LENGTH_LONG);
-                    toast.show();
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
                 }
             }
         });
-
-
-
     }
 
     class PhotoAdapter extends BaseAdapter {
@@ -290,6 +287,14 @@ public class Fragment2 extends Fragment {
                 }
                 return;
             }
+            case REQUEST_IMAGE_CAPTURE:{
+                if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    sendTakePhotoIntent();
+                }else{
+                    Toast.makeText(getContext(), "권한이 거부되었습니다", Toast.LENGTH_SHORT).show();
+                }
+            }
 
             // other 'case' lines to check for other
             // permissions this app might request
@@ -298,7 +303,7 @@ public class Fragment2 extends Fragment {
     // Taking a photo functionality.
     private void sendTakePhotoIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) { // 카메라 앱이 있는지 체크
             File photoFile = null;
             try {
                 photoFile = createImageFile();
@@ -308,10 +313,13 @@ public class Fragment2 extends Fragment {
 
             if (photoFile != null) {
                 photoUri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName(), photoFile);
+                Log.d("포토 uri",photoUri + "");
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 Log.d("photo","카메라 앱 호출 직전");
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
+        }else {
+            Toast.makeText(getContext(),"실행할 수 있는 카메라 앱이 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -332,44 +340,47 @@ public class Fragment2 extends Fragment {
         return image;
     }
 
-    public boolean CamPermissioncheck() {
-        if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
-            if (checkselfpermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+    public int CamPermissioncheck() {
+        return checkselfpermission(Manifest.permission.CAMERA);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
-            Toast.makeText(getContext(), "Image...", Toast.LENGTH_SHORT).show();
-
-            Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
-
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            ContextWrapper cw = new ContextWrapper(getContext());
-            File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
-
-            File path = new File(dir, timeStamp);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(path);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            } catch(IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    fos.close();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode != getActivity().RESULT_OK){
+            return;
         }
+
+        switch (requestCode){
+            case REQUEST_IMAGE_CAPTURE:{
+                Toast.makeText(getContext(), "Image...", Toast.LENGTH_SHORT).show();
+
+
+                Bitmap bitmap = BitmapFactory.decodeFile(imageFilePath);
+
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                ContextWrapper cw = new ContextWrapper(getContext());
+                File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+                File path = new File(dir, timeStamp);
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(path);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    Log.d("카메라 저장", "성공");
+                } catch(IOException e) {
+                    e.printStackTrace();
+                    Log.d("카메라 저장", "실패");
+                } finally {
+                    try {
+                        fos.close();
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } //case REQUST_IMAGE_CAPTURE
+        } //switch (requestCode)
+
     }
 }
