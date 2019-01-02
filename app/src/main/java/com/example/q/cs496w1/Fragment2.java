@@ -30,6 +30,8 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -388,7 +390,7 @@ public class Fragment2 extends Fragment {
                     }
                 }
                 */
-                /*
+//todo : 임시파일 생성하는 코드 지우기 ( createfile, fileoutputstream)
                 try{
                     path = new File(string_path);
                     Log.d("debug","1");
@@ -400,6 +402,7 @@ public class Fragment2 extends Fragment {
                     FileOutputStream out = new FileOutputStream(string_path+timeStamp+".jpg");
                     Log.d("debug",string_path+timeStamp+".jpg");
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    MediaStore.Images.Media.insertImage(getContext().getContentResolver(), bitmap ,"title", "description");
                     Log.d("debug","4");
                     out.flush();
                     out.close();
@@ -410,7 +413,7 @@ public class Fragment2 extends Fragment {
                     Log.e("IOException", exception.getMessage());
                 }
                 Log.d("debug","5");
-                */
+
 
             } //case REQUST_IMAGE_CAPTURE
         } //switch (requestCode)
